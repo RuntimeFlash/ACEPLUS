@@ -52,7 +52,36 @@ SERVERLESS_MODE = os.getenv("SERVERLESS", "0") == "1"
 logging_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logging.log")
 logging.basicConfig(filename=logging_file, level=logging.DEBUG)
 current_dir = os.path.dirname(os.path.abspath(__file__))
-data_path = os.path.join(current_dir, "data")
+
+
+def _resolve_data_path() -> str:
+    configured = os.getenv("BACKEND_DATA_DIR")
+    candidates = [
+        configured,
+        os.path.join(current_dir, "data"),
+        os.path.join(current_dir, "backend", "data"),
+        os.path.join(os.path.dirname(current_dir), "backend", "data"),
+    ]
+    required = ("students.json", "class10_students.json", "Update.json")
+    seen = set()
+    for path in candidates:
+        if not path:
+            continue
+        normalized = os.path.normpath(path)
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        if not os.path.isdir(normalized):
+            continue
+        if all(os.path.exists(os.path.join(normalized, name)) for name in required):
+            return normalized
+    raise FileNotFoundError(
+        "Could not locate backend data directory with required files "
+        f"{required}. Checked: {', '.join([p for p in candidates if p])}"
+    )
+
+
+data_path = _resolve_data_path()
 
 # Configure upload settings from environment variables
 UPLOAD_FOLDER = os.path.join(
@@ -74,7 +103,6 @@ CORS(app, resources={
         "allow_headers": ["Content-Type", "Authorization"],
         "supports_credentials": True,
         "expose_headers": ["Content-Type", "Authorization", "Cache-Control", "X-Accel-Buffering"],
-        "allow_credentials": True
     }
 })
 
@@ -87,10 +115,12 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 16777216))  # Default 16MB
 
 # Load student information
-student_info = json.loads(open(os.path.join(data_path, "students.json")).read())
-class10_student_info = json.loads(open(os.path.join(data_path, "class10_students.json")).read())
-
-UPDATE_LOGS = json.loads(open(os.path.join(data_path, "Update.json")).read())
+with open(os.path.join(data_path, "students.json"), "r", encoding="utf-8") as f:
+    student_info = json.load(f)
+with open(os.path.join(data_path, "class10_students.json"), "r", encoding="utf-8") as f:
+    class10_student_info = json.load(f)
+with open(os.path.join(data_path, "Update.json"), "r", encoding="utf-8") as f:
+    UPDATE_LOGS = json.load(f)
 
 
 @app.route("/api/login", methods=["POST"])
