@@ -1,12 +1,13 @@
 import os
 import threading
 import queue
-from datetime import datetime
-from pytz import timezone
+from datetime import datetime, timedelta, timezone
+from pytz import timezone as pytz_timezone
 from typing import Any, Dict, List, Optional, Tuple
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.collection import Collection
 from bson import ObjectId
+from gridfs import GridFSBucket
 from dotenv import load_dotenv
 import hashlib
 
@@ -17,7 +18,7 @@ load_dotenv()
 # Helpers
 # -----------------------------------------------------------------------------
 
-IST = timezone("Asia/Kolkata")
+IST = pytz_timezone("Asia/Kolkata")
 
 def convert_objectid_to_str(obj):
     if isinstance(obj, ObjectId):
@@ -85,9 +86,12 @@ class WriteQueue:
 
     def __init__(self, db_client: DatabaseClient, worker_count: int = 1) -> None:
         self.db_client = db_client
+        self._sync_mode = os.getenv("SERVERLESS", "0") == "1"
         self._q: "queue.Queue[Tuple[str, Tuple, Dict]]" = queue.Queue()
         self._workers: List[threading.Thread] = []
         self._stop_event = threading.Event()
+        if self._sync_mode:
+            return
         for i in range(worker_count):
             t = threading.Thread(target=self._worker, name=f"WriteQueueWorker-{i}", daemon=True)
             t.start()
@@ -95,6 +99,14 @@ class WriteQueue:
 
     def enqueue(self, op_name: str, *args, **kwargs) -> None:
         """Enqueue an operation by name and args; repository methods will interpret."""
+        if self._sync_mode:
+            func = kwargs.pop("callable", None)
+            if callable(func):
+                try:
+                    func(*args, **kwargs)
+                except Exception as e:
+                    print(f"[WriteQueue] Error processing op {op_name}: {e}")
+            return
         self._q.put((op_name, args, kwargs))
 
     def _worker(self) -> None:
@@ -114,9 +126,152 @@ class WriteQueue:
                 self._q.task_done()
 
     def stop(self) -> None:
+        if self._sync_mode:
+            return
         self._stop_event.set()
         for t in self._workers:
             t.join(timeout=1.0)
+
+
+class UploadRepository:
+    """Stores user uploads in Mongo GridFS to avoid local-disk dependency."""
+
+    def __init__(self, db_client: DatabaseClient) -> None:
+        self.db_client = db_client
+        self._bucket9 = GridFSBucket(db_client._db9, bucket_name="uploads")
+        self._bucket10 = GridFSBucket(db_client._db10, bucket_name="uploads")
+        for std in (9, 10):
+            files_col = db_client.get_collection("uploads.files", standard=std)
+            files_col.create_index([("metadata.user_id", ASCENDING), ("uploadDate", DESCENDING)])
+            files_col.create_index([("metadata.parent_file_id", ASCENDING)])
+
+    @staticmethod
+    def _parse_object_id(file_id: str) -> Optional[ObjectId]:
+        try:
+            return ObjectId(file_id)
+        except Exception:
+            return None
+
+    def _bucket(self, is_class10: bool) -> GridFSBucket:
+        return self._bucket10 if is_class10 else self._bucket9
+
+    def _files_col(self, is_class10: bool) -> Collection:
+        return self.db_client.get_collection("uploads.files", is_class10=is_class10)
+
+    def save_file(
+        self,
+        data: bytes,
+        filename: str,
+        user_id: str,
+        is_class10: bool,
+        content_type: Optional[str] = None,
+        file_kind: str = "original",
+        parent_file_id: Optional[str] = None,
+    ) -> str:
+        metadata = {
+            "user_id": user_id,
+            "content_type": content_type or "application/octet-stream",
+            "file_kind": file_kind,
+        }
+        if parent_file_id:
+            metadata["parent_file_id"] = str(parent_file_id)
+        with self._bucket(is_class10).open_upload_stream(filename, metadata=metadata) as stream:
+            stream.write(data)
+            return str(stream._id)
+
+    def get_file(self, file_id: str, is_class10: bool) -> Optional[Dict[str, Any]]:
+        oid = self._parse_object_id(file_id)
+        if oid is None:
+            return None
+        file_doc = self._files_col(is_class10).find_one({"_id": oid})
+        if not file_doc:
+            return None
+        stream = self._bucket(is_class10).open_download_stream(oid)
+        try:
+            data = stream.read()
+        finally:
+            stream.close()
+        metadata = file_doc.get("metadata", {}) or {}
+        return {
+            "id": str(file_doc["_id"]),
+            "filename": file_doc.get("filename") or "",
+            "length": int(file_doc.get("length", 0)),
+            "upload_date": file_doc.get("uploadDate"),
+            "user_id": metadata.get("user_id"),
+            "content_type": metadata.get("content_type"),
+            "file_kind": metadata.get("file_kind", "original"),
+            "parent_file_id": metadata.get("parent_file_id"),
+            "data": data,
+        }
+
+    def delete_file(self, file_id: str, is_class10: bool, delete_children: bool = True) -> bool:
+        oid = self._parse_object_id(file_id)
+        if oid is None:
+            return False
+        files_col = self._files_col(is_class10)
+        file_doc = files_col.find_one({"_id": oid})
+        if not file_doc:
+            return False
+        if delete_children:
+            child_docs = files_col.find({"metadata.parent_file_id": str(oid)})
+            for child in child_docs:
+                try:
+                    self._bucket(is_class10).delete(child["_id"])
+                except Exception:
+                    continue
+        self._bucket(is_class10).delete(oid)
+        return True
+
+    def enforce_user_bytes_cap(
+        self,
+        user_id: str,
+        is_class10: bool,
+        bytes_limit: int,
+        window_hours: int = 24,
+    ) -> None:
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=window_hours)
+        files_col = self._files_col(is_class10)
+        docs = list(
+            files_col.find(
+                {"metadata.user_id": user_id, "uploadDate": {"$gte": cutoff}},
+                {"_id": 1, "length": 1},
+            ).sort("uploadDate", ASCENDING)
+        )
+        total_bytes = sum(int(doc.get("length", 0)) for doc in docs)
+        while total_bytes > bytes_limit and docs:
+            oldest = docs.pop(0)
+            removed = self.delete_file(str(oldest.get("_id")), is_class10, delete_children=False)
+            if removed:
+                total_bytes -= int(oldest.get("length", 0))
+
+
+class QuestionReportRepository:
+    """Persists question reports in Mongo instead of local JSON files."""
+
+    def __init__(self, db_client: DatabaseClient) -> None:
+        self.db_client = db_client
+        for std in (9, 10):
+            col = db_client.get_collection("QuestionReports", standard=std)
+            col.create_index(
+                [("user_id", ASCENDING), ("exam_id", ASCENDING), ("question_index", ASCENDING)],
+                unique=True,
+            )
+            col.create_index([("timestamp", DESCENDING)])
+
+    def _col(self, is_class10: bool) -> Collection:
+        return self.db_client.get_collection("QuestionReports", is_class10=is_class10)
+
+    def create_report_if_absent(self, report: Dict[str, Any], is_class10: bool) -> bool:
+        result = self._col(is_class10).update_one(
+            {
+                "user_id": report["user_id"],
+                "exam_id": report["exam_id"],
+                "question_index": report["question_index"],
+            },
+            {"$setOnInsert": report},
+            upsert=True,
+        )
+        return result.upserted_id is not None
 
 
 # -----------------------------------------------------------------------------
@@ -441,6 +596,26 @@ class UserRepository:
         if not user:
             return []
         return user.get("examHistory", []) or []
+
+    def get_question_history(self, user_id: str, is_class10: Optional[bool] = None) -> List[str]:
+        user = self.get_user(user_id, is_class10)
+        if not user:
+            return []
+        history = user.get("questionHistory", [])
+        return history if isinstance(history, list) else []
+
+    def set_question_history(self, user_id: str, history: List[str], is_class10: Optional[bool] = None) -> None:
+        user = self.get_user(user_id, is_class10)
+        if not user:
+            return
+        with self._lock:
+            user["questionHistory"] = history
+
+        def _op():
+            col, _ = self._col_for_user(user_id, is_class10)
+            col.update_one({"id": user_id}, {"$set": {"questionHistory": history}})
+
+        self.write_queue.enqueue("user_set_question_history", callable=_op)
 
     def get_all_students_by_standard(self, standard: int) -> List[Dict[str, Any]]:
         # Fetch directly from DB (list operation) and optionally refresh cache entries
@@ -1010,6 +1185,8 @@ user_repo = UserRepository(_db_client, _write_queue)
 exam_repo = ExamRepository(_db_client, _write_queue)
 test_repo = TestRepository(_db_client, _write_queue)
 leaderboard_service = LeaderboardService(_db_client, user_repo, _write_queue)
+upload_repo = UploadRepository(_db_client)
+question_report_repo = QuestionReportRepository(_db_client)
 
 
 def preload_caches():
@@ -1035,6 +1212,8 @@ __all__ = [
     "exam_repo",
     "test_repo",
     "leaderboard_service",
+    "upload_repo",
+    "question_report_repo",
     "convert_objectid_to_str",
     "preload_caches",
 ]

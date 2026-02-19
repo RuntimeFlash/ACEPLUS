@@ -2,15 +2,18 @@ try:
     import logging
     import copy
     import json
+    import mimetypes
     import os
     import random
+    import shutil
+    import tempfile
     import time
     import traceback
     from datetime import datetime, timedelta
 
     import generate
     from werkzeug.utils import secure_filename
-    from flask import Flask, jsonify, request, send_from_directory, Response
+    from flask import Flask, jsonify, request, Response
     from flask_cors import CORS
     from flask_jwt_extended import (
         JWTManager,
@@ -24,6 +27,8 @@ try:
         exam_repo,
         test_repo,
         leaderboard_service,
+        upload_repo,
+        question_report_repo,
         convert_objectid_to_str,
         preload_caches,
     )
@@ -45,6 +50,7 @@ except ImportError as e:
 load_dotenv()
 
 VERSION = "1.1.0"
+SERVERLESS_MODE = os.getenv("SERVERLESS", "0") == "1"
 
 # Setup
 logging_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logging.log")
@@ -53,10 +59,13 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 data_path = os.path.join(current_dir, "data")
 
 # Configure upload settings from environment variables
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            os.getenv('UPLOAD_FOLDER', 'uploads'))
+UPLOAD_FOLDER = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    os.getenv("UPLOAD_FOLDER", "uploads"),
+)
 ALLOWED_EXTENSIONS = set(os.getenv('ALLOWED_EXTENSIONS', 'png,jpg,jpeg').split(','))
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+if not SERVERLESS_MODE:
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app = Flask(__name__)
 CORS(app, resources={
@@ -239,7 +248,7 @@ def create_exam():
         exam_id = generate_memorable_name()
         try:
             questions = generate.generate_exam_questions(
-                subject, lesson_paths, current_user
+                subject, lesson_paths, current_user, is_class10=is_class10
             )
         except Exception as e:
             print(f"Error generating questions: {e}")
@@ -627,26 +636,7 @@ def report_question():
 
         question_data = exam["questions"][question_index]
 
-        # Updated path to use data folder
-        reports_file = os.path.join(data_path, "reports", "question_reports.json")
-        os.makedirs(os.path.dirname(reports_file), exist_ok=True)
-
-        try:
-            with open(reports_file, "r") as f:
-                reports = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            reports = []
-
-        # Check if question already reported by this user
-        for report in reports:
-            if (
-                report.get("exam_id") == exam_id
-                and report.get("question_index") == question_index
-                and report.get("user_id") == current_user
-            ):
-                return jsonify({"message": "Report submitted successfully"}), 200
-
-        # Create new report
+        # Create new report (idempotent per user/exam/question)
         report = {
             "user_id": current_user,
             "class10": is_class10,
@@ -660,10 +650,7 @@ def report_question():
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
         }
 
-        reports.append(report)
-
-        with open(reports_file, "w") as f:
-            json.dump(reports, f, indent=2)
+        question_report_repo.create_report_if_absent(report, is_class10)
 
         return jsonify({"message": "Report submitted successfully"}), 200
 
@@ -784,7 +771,9 @@ def generate_test():
             pass
         else:
             try:
-                questions = generate.generate_exam_questions(subject, lesson_paths, current_user)
+                questions = generate.generate_exam_questions(
+                    subject, lesson_paths, current_user, is_class10=class10
+                )
             except Exception as e:
                 print(f"Error generating questions: {e}")
                 return jsonify({"message": f"Error generating questions: {str(e)}"}), 500
@@ -992,7 +981,7 @@ def get_leaderboard():
 @app.route("/api/upload_files", methods=["POST"])
 @jwt_required()
 def upload_files():
-    current_user, _ = get_current_user_info()
+    current_user, is_class10 = get_current_user_info()
 
     # Collect any files (compatible with both 'file_*' and 'image_*' keys)
     files = [request.files[key] for key in request.files]
@@ -1002,48 +991,8 @@ def upload_files():
 
     # Per-user daily data cap: 100 MB
     BYTES_LIMIT = 100 * 1024 * 1024  # 100 MB
-    now_ts = time.time()
-    twenty_four_hours = 24 * 60 * 60
-
-    def list_user_files_last_24h(user_id: str):
-        items = []
-        try:
-            for fname in os.listdir(app.config['UPLOAD_FOLDER']):
-                if not fname.startswith(f"{user_id}_"):
-                    continue
-                fpath = os.path.join(app.config['UPLOAD_FOLDER'], fname)
-                try:
-                    ctime = os.path.getctime(fpath)
-                    if now_ts - ctime <= twenty_four_hours:
-                        size = os.path.getsize(fpath)
-                        items.append({
-                            'name': fname,
-                            'path': fpath,
-                            'ctime': ctime,
-                            'size': size
-                        })
-                except Exception:
-                    continue
-        except Exception:
-            pass
-        items.sort(key=lambda x: x['ctime'])
-        return items
-
-    def enforce_user_bytes_cap(user_id: str):
-        files_24h = list_user_files_last_24h(user_id)
-        total_bytes = sum(f['size'] for f in files_24h)
-        while total_bytes > BYTES_LIMIT and files_24h:
-            oldest = files_24h.pop(0)
-            try:
-                os.remove(oldest['path'])
-                print(f"Deleted oldest file to enforce cap: {oldest['name']}")
-                total_bytes -= oldest['size']
-            except Exception as e:
-                print(f"Error deleting oldest file {oldest['name']}: {e}")
-                break
-
     # Allow images + pdf + pptx
-    allowed_file_exts = set(ALLOWED_EXTENSIONS) | {'pdf', 'pptx'}
+    allowed_file_exts = set(ALLOWED_EXTENSIONS) | {'pdf', 'pptx', 'webp', 'bmp'}
 
     uploaded_items = []
     for file in files:
@@ -1052,35 +1001,76 @@ def upload_files():
         if not allowed_file(file.filename, allowed_file_exts):
             continue
         filename = secure_filename(file.filename)
-        timestamp = int(now_ts)
-        unique_filename = f"{current_user}_{timestamp}_{filename}"
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         try:
-            file.save(filepath)
+            file_bytes = file.read()
+            if not file_bytes:
+                continue
+
+            ext = os.path.splitext(filename)[1].lower()
+            ftype = (
+                'image'
+                if ext in ('.png', '.jpg', '.jpeg', '.webp', '.bmp')
+                else ('pdf' if ext == '.pdf' else ('pptx' if ext == '.pptx' else 'file'))
+            )
+            content_type = file.content_type or mimetypes.guess_type(filename)[0] or "application/octet-stream"
+            file_id = upload_repo.save_file(
+                file_bytes,
+                filename,
+                current_user,
+                is_class10,
+                content_type=content_type,
+                file_kind="original",
+            )
+
             # Determine type and generate previews
-            ext = os.path.splitext(unique_filename)[1].lower()
-            ftype = 'image' if ext in ('.png', '.jpg', '.jpeg', '.webp', '.bmp') else ('pdf' if ext == '.pdf' else ('pptx' if ext == '.pptx' else 'file'))
             previews = []
             if ftype == 'image':
-                previews = [unique_filename]
-            elif ftype == 'pdf':
-                previews = render_pdf_previews(filepath, app.config['UPLOAD_FOLDER'], pages=1)
-            elif ftype == 'pptx':
-                previews = render_pptx_previews(filepath, app.config['UPLOAD_FOLDER'], slides=1)
+                previews = [file_id]
+            elif ftype in {'pdf', 'pptx'}:
+                tmp_dir = tempfile.mkdtemp(prefix="aceplus-preview-")
+                try:
+                    tmp_input_path = os.path.join(tmp_dir, filename)
+                    with open(tmp_input_path, "wb") as tmp_in:
+                        tmp_in.write(file_bytes)
 
-            try:
-                enforce_user_bytes_cap(current_user)
-            except Exception as e:
-                print(f"Error enforcing data cap for user {current_user}: {e}")
+                    if ftype == 'pdf':
+                        preview_names = render_pdf_previews(tmp_input_path, tmp_dir, pages=1)
+                    else:
+                        preview_names = render_pptx_previews(tmp_input_path, tmp_dir, slides=1)
+
+                    for preview_name in preview_names:
+                        preview_path = os.path.join(tmp_dir, preview_name)
+                        if not os.path.exists(preview_path):
+                            continue
+                        with open(preview_path, "rb") as preview_file:
+                            preview_bytes = preview_file.read()
+                        preview_id = upload_repo.save_file(
+                            preview_bytes,
+                            preview_name,
+                            current_user,
+                            is_class10,
+                            content_type="image/png",
+                            file_kind="preview",
+                            parent_file_id=file_id,
+                        )
+                        previews.append(preview_id)
+                finally:
+                    shutil.rmtree(tmp_dir, ignore_errors=True)
 
             uploaded_items.append({
-                'filename': unique_filename,
+                'filename': file_id,
                 'type': ftype,
                 'previews': previews
             })
         except Exception as e:
             print(f"Error saving file {filename}: {e}")
             continue
+
+    # Enforce daily cap after processing to include all freshly stored assets.
+    try:
+        upload_repo.enforce_user_bytes_cap(current_user, is_class10, BYTES_LIMIT)
+    except Exception as e:
+        print(f"Error enforcing data cap for user {current_user}: {e}")
 
     if not uploaded_items:
         return jsonify({'message': 'No valid files uploaded'}), 400
@@ -1095,22 +1085,31 @@ def upload_files():
 @jwt_required()
 def generate_from_files():
     """Generate questions from uploaded files using Server-Sent Events."""
-    current_user, _ = get_current_user_info()
+    current_user, is_class10 = get_current_user_info()
 
     filenames = request.args.getlist('filenames')
 
     if not filenames:
         return jsonify({'message': 'No files provided'}), 400
 
+    tmp_dir = tempfile.mkdtemp(prefix="aceplus-generate-")
     try:
-        file_paths = [os.path.join(app.config['UPLOAD_FOLDER'], filename) for filename in filenames]
-
+        file_paths = []
         missing_files = []
-        for path in file_paths:
-            if not os.path.exists(path):
-                missing_files.append(os.path.basename(path))
+        for file_id in filenames:
+            uploaded = upload_repo.get_file(file_id, is_class10)
+            if not uploaded or uploaded.get("user_id") != current_user:
+                missing_files.append(file_id)
+                continue
+            source_name = secure_filename(uploaded.get("filename") or f"{file_id}.bin")
+            local_name = f"{file_id}_{source_name}"
+            local_path = os.path.join(tmp_dir, local_name)
+            with open(local_path, "wb") as f:
+                f.write(uploaded["data"])
+            file_paths.append(local_path)
 
         if missing_files:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
             return jsonify({
                 'message': f'Some files were not found: {", ".join(missing_files)}'
             }), 404
@@ -1151,6 +1150,8 @@ def generate_from_files():
                 print(f"Error in SSE stream: {str(e)}")
                 print(traceback.format_exc())
                 yield f"event: error\ndata: {json.dumps({'message': str(e)})}\n\n"
+            finally:
+                shutil.rmtree(tmp_dir, ignore_errors=True)
 
         response = Response(
             generate_sse(),
@@ -1167,6 +1168,7 @@ def generate_from_files():
         return response
 
     except Exception as e:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
         print(f"Error in generate_from_files: {str(e)}")
         return jsonify({
             'message': f'Error processing files: {str(e)}'
@@ -1176,8 +1178,19 @@ def generate_from_files():
 @app.route("/api/uploads/<filename>")
 @jwt_required()
 def uploaded_file(filename):
-    current_user, _ = get_current_user_info()
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    current_user, is_class10 = get_current_user_info()
+    uploaded = upload_repo.get_file(filename, is_class10)
+    if not uploaded:
+        return jsonify({"message": "File not found"}), 404
+    if uploaded.get("user_id") != current_user:
+        return jsonify({"message": "Unauthorized"}), 401
+    response = Response(
+        uploaded["data"],
+        mimetype=uploaded.get("content_type") or "application/octet-stream",
+    )
+    safe_name = secure_filename(uploaded.get("filename") or f"{filename}.bin")
+    response.headers["Content-Disposition"] = f'inline; filename="{safe_name}"'
+    return response
 
 
 @app.route("/api/updates", methods=["GET"])
@@ -1383,6 +1396,30 @@ def start_unsubmitted_exams_scheduler():
         time.sleep(86400)
 
 
+def _authorized_maintenance_request() -> bool:
+    token = os.getenv("MAINTENANCE_TOKEN")
+    if not token:
+        return False
+    provided = request.headers.get("x-maintenance-token") or request.args.get("token")
+    return provided == token
+
+
+@app.route("/api/internal/maintenance/expire_tests", methods=["POST"])
+def maintenance_expire_tests():
+    if not _authorized_maintenance_request():
+        return jsonify({"message": "Unauthorized"}), 401
+    moved = test_repo.move_expired_tests_to_inactive()
+    return jsonify({"message": "ok", "moved": moved}), 200
+
+
+@app.route("/api/internal/maintenance/delete_unsubmitted_exams", methods=["POST"])
+def maintenance_delete_unsubmitted_exams():
+    if not _authorized_maintenance_request():
+        return jsonify({"message": "Unauthorized"}), 401
+    delete_unsubmitted_exams(exam_repo)
+    return jsonify({"message": "ok"}), 200
+
+
 @app.route("/api/unsubmitted_exams", methods=["GET"])
 @jwt_required()
 def get_unsubmitted_exams_route():
@@ -1467,16 +1504,16 @@ def delete_unsubmitted_exam_route(exam_id):
         return jsonify({"message": "Failed to delete exam"}), 500
 
 
-# Start background threads when app starts
-# Start background threads when app starts
-cleanup_thread = threading.Thread(target=start_cleanup_scheduler, daemon=True)
-cleanup_thread.start()
+# Start background threads only for long-running local server mode.
+if not SERVERLESS_MODE:
+    cleanup_thread = threading.Thread(target=start_cleanup_scheduler, daemon=True)
+    cleanup_thread.start()
 
-expiration_thread = threading.Thread(target=start_expiration_scheduler, daemon=True)
-expiration_thread.start()
+    expiration_thread = threading.Thread(target=start_expiration_scheduler, daemon=True)
+    expiration_thread.start()
 
-unsubmitted_exams_thread = threading.Thread(target=start_unsubmitted_exams_scheduler, daemon=True)
-unsubmitted_exams_thread.start()
+    unsubmitted_exams_thread = threading.Thread(target=start_unsubmitted_exams_scheduler, daemon=True)
+    unsubmitted_exams_thread.start()
 
 if __name__ == "__main__":
     print("Preloading caches before starting server...")

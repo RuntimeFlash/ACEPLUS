@@ -75,6 +75,30 @@ def get_client_for_model(model_type: str) -> Tuple[OpenAI, str, bool]:
 # Add at the top of the file with other global variables
 user_question_history = {}  # Stores used question IDs per user
 
+
+def _load_persistent_question_history(user_id: str, is_class10: bool):
+    """Prefer Mongo-backed history; fallback to in-memory for local/offline usage."""
+    try:
+        from db import user_repo
+
+        history = user_repo.get_question_history(user_id, is_class10)
+        if isinstance(history, list):
+            return history
+    except Exception:
+        pass
+    return user_question_history.get(user_id, [])
+
+
+def _save_persistent_question_history(user_id: str, history, is_class10: bool):
+    try:
+        from db import user_repo
+
+        user_repo.set_question_history(user_id, history, is_class10)
+        return
+    except Exception:
+        pass
+    user_question_history[user_id] = history
+
 def generate_hint(question_text: str):
     """
     Generate a helpful hint for a given question without revealing the answer, streaming the output.
@@ -271,11 +295,14 @@ def generate_solutions_batch(questions_list):
     return solutions
 
 
-def generate_exam_questions(subject, lesson_files, user_id):
+def generate_exam_questions(subject, lesson_files, user_id, is_class10=False):
     global user_question_history
-    
+
+    history = _load_persistent_question_history(user_id, is_class10)
     if user_id not in user_question_history:
-        user_question_history[user_id] = []
+        user_question_history[user_id] = list(history)
+    else:
+        user_question_history[user_id] = list(history)
     
     num_lessons = len(lesson_files)
     if num_lessons == 1:
@@ -316,7 +343,7 @@ def generate_exam_questions(subject, lesson_files, user_id):
     available_questions = {
         qid: q
         for qid, q in all_questions.items()
-        if qid not in user_question_history[user_id]
+        if qid not in history
     }
     
     if len(available_questions) < num_questions:
@@ -324,9 +351,9 @@ def generate_exam_questions(subject, lesson_files, user_id):
             f"Resetting question history for user {user_id} due to insufficient questions"
         )
         current_lesson_ids = set(all_questions.keys())
-        user_question_history[user_id] = [
+        history = [
             qid
-            for qid in user_question_history[user_id]
+            for qid in history
             if qid not in current_lesson_ids
         ]
         available_questions = all_questions
@@ -360,7 +387,11 @@ def generate_exam_questions(subject, lesson_files, user_id):
     
     random.shuffle(selected_questions)
     
-    user_question_history[user_id].extend(q["l-id"] for q in selected_questions)
+    history.extend(q["l-id"] for q in selected_questions)
+    # Prevent unbounded history growth.
+    history = history[-3000:]
+    user_question_history[user_id] = history
+    _save_persistent_question_history(user_id, history, is_class10)
 
     valid_questions = [
         q for q in selected_questions
