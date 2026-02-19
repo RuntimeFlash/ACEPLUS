@@ -8,11 +8,7 @@ from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.collection import Collection
 from bson import ObjectId
 from gridfs import GridFSBucket
-from dotenv import load_dotenv
 import hashlib
-
-# Load environment variables
-load_dotenv()
 
 # -----------------------------------------------------------------------------
 # Helpers

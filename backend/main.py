@@ -20,7 +20,6 @@ try:
         create_access_token,
         jwt_required,
     )
-    from dotenv import load_dotenv
 
     from db import (
         user_repo,
@@ -45,9 +44,6 @@ except ImportError as e:
     print(f"Import Error: {str(e)}")
     print("Did you run npm run setup?")
     raise
-
-# Load environment variables
-load_dotenv()
 
 VERSION = "1.1.0"
 SERVERLESS_MODE = os.getenv("SERVERLESS", "0") == "1"

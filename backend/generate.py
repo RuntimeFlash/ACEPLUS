@@ -4,7 +4,6 @@ from openai import OpenAI
 import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dotenv import load_dotenv
 import traceback
 from typing import Dict, Tuple
 from utils.generate_utils import (
@@ -21,15 +20,10 @@ from utils.prompts import (
     IMAGE_ANALYSIS_PROMPT,
     HINT_GENERATION_PROMPT,
 )
-from utils.validate_env import validate_env_config
 from utils.parse_files import parse_any
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
-load_dotenv()
-
-# Validate environment configuration
-valid_providers = validate_env_config()
 
 def get_provider_config(provider: str) -> Dict[str, str]:
     """Get API key and base URL for a specific provider."""
