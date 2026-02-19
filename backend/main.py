@@ -61,9 +61,16 @@ def _resolve_data_path() -> str:
         os.path.join(current_dir, "data"),
         os.path.join(current_dir, "backend", "data"),
         os.path.join(os.path.dirname(current_dir), "backend", "data"),
+        os.path.join(os.path.dirname(current_dir), "data"),
+        "/var/task/data",
+        "/var/task/backend/data",
     ]
     required = ("students.json", "class10_students.json", "Update.json")
     seen = set()
+
+    def has_required_files(path: str) -> bool:
+        return all(os.path.exists(os.path.join(path, name)) for name in required)
+
     for path in candidates:
         if not path:
             continue
@@ -73,8 +80,34 @@ def _resolve_data_path() -> str:
         seen.add(normalized)
         if not os.path.isdir(normalized):
             continue
-        if all(os.path.exists(os.path.join(normalized, name)) for name in required):
+        if has_required_files(normalized):
             return normalized
+
+    # Last-resort recursive search under likely roots.
+    search_roots = [
+        current_dir,
+        os.path.dirname(current_dir),
+        "/var/task",
+    ]
+    for root in search_roots:
+        if not root:
+            continue
+        normalized_root = os.path.normpath(root)
+        if not os.path.isdir(normalized_root):
+            continue
+        for dirpath, dirnames, _ in os.walk(normalized_root):
+            # Prune expensive/unrelated folders.
+            dirnames[:] = [
+                d for d in dirnames
+                if d not in {"node_modules", ".git", "__pycache__", ".next"}
+            ]
+            candidate = os.path.normpath(dirpath)
+            if candidate in seen:
+                continue
+            seen.add(candidate)
+            if has_required_files(candidate):
+                return candidate
+
     raise FileNotFoundError(
         "Could not locate backend data directory with required files "
         f"{required}. Checked: {', '.join([p for p in candidates if p])}"

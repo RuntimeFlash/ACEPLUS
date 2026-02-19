@@ -1,7 +1,16 @@
 {
   "functions": {
     "api/index.py": {
-      "includeFiles": "backend/data/**"
+      "includeFiles": [
+        "backend/data/students.json",
+        "backend/data/class10_students.json",
+        "backend/data/teachers.json",
+        "backend/data/Update.json",
+        "backend/data/lessons.json",
+        "backend/data/lessons10.json",
+        "backend/data/lessons/**",
+        "backend/data/lessons10/**"
+      ]
     }
   },
   "rewrites": [

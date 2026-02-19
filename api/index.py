@@ -2,8 +2,21 @@ import os
 import sys
 
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BACKEND_DIR = os.path.join(ROOT, "backend")
+def _resolve_backend_dir() -> str:
+    file_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(file_dir, "backend"),
+        os.path.join(os.path.dirname(file_dir), "backend"),
+    ]
+    for candidate in candidates:
+        normalized = os.path.normpath(candidate)
+        if os.path.isdir(normalized):
+            return normalized
+    # Fallback for local dev shape: <repo>/api/index.py + sibling <repo>/backend
+    return os.path.normpath(os.path.join(os.path.dirname(file_dir), "backend"))
+
+
+BACKEND_DIR = _resolve_backend_dir()
 
 if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
