@@ -2,7 +2,7 @@ import os
 import threading
 import queue
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pytz import timezone as pytz_timezone
 from typing import Any, Dict, List, Optional, Tuple
 from pymongo import MongoClient, ASCENDING, DESCENDING
@@ -24,6 +24,8 @@ IST = pytz_timezone("Asia/Kolkata")
 def convert_objectid_to_str(obj):
     if isinstance(obj, ObjectId):
         return str(obj)
+    elif isinstance(obj, (datetime, date)):
+        return obj.isoformat()
     elif isinstance(obj, dict):
         return {key: convert_objectid_to_str(value) for key, value in obj.items()}
     elif isinstance(obj, list):
