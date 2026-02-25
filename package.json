@@ -40,6 +40,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start-backend": "cd backend && python main.py",
+    "start-backend-v2": "cd backend && uvicorn v2.main:app --host 0.0.0.0 --port 9027",
     "setup": "cd backend && python setup.py"
   },
   "eslintConfig": {
