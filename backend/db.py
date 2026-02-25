@@ -9,6 +9,10 @@ from pymongo.collection import Collection
 from bson import ObjectId
 from gridfs import GridFSBucket
 import hashlib
+from dotenv import load_dotenv
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(dotenv_path=os.path.join(current_dir, ".env"))
 
 # -----------------------------------------------------------------------------
 # Helpers

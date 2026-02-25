@@ -1,9 +1,20 @@
+import os
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
+
+current_file_dir = os.path.dirname(os.path.abspath(__file__))
+if load_dotenv is not None:
+    # Load local .env before importing modules that read env at import time.
+    load_dotenv(dotenv_path=os.path.join(current_file_dir, ".env"))
+
 try:
     import logging
     import copy
     import json
     import mimetypes
-    import os
     import random
     import shutil
     import tempfile
@@ -49,9 +60,20 @@ VERSION = "1.1.0"
 SERVERLESS_MODE = os.getenv("SERVERLESS", "0") == "1"
 
 # Setup
-logging_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logging.log")
+logging_file = os.path.join(current_file_dir, "logging.log")
 logging.basicConfig(filename=logging_file, level=logging.DEBUG)
-current_dir = os.path.dirname(os.path.abspath(__file__))
+current_dir = current_file_dir
+
+
+def _get_env_int(name: str, default: int) -> int:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    # Allow values like "16777216  # 16MB".
+    cleaned = raw.split("#", 1)[0].strip()
+    if not cleaned:
+        return default
+    return int(cleaned)
 
 
 def _resolve_data_path() -> str:
@@ -145,7 +167,7 @@ jwt = JWTManager(app)
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = False
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = False
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 16777216))  # Default 16MB
+app.config['MAX_CONTENT_LENGTH'] = _get_env_int('MAX_CONTENT_LENGTH', 16777216)  # Default 16MB
 
 # Load student information
 with open(os.path.join(data_path, "students.json"), "r", encoding="utf-8") as f:
