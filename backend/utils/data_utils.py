@@ -2,6 +2,16 @@ import json
 import os
 
 def load_json_file(filename, data_path="data"):
+    try:
+        from db import static_content_repo
+
+        mongo_content = static_content_repo.get_json(filename)
+        if mongo_content is not None:
+            return mongo_content
+    except Exception:
+        # Keep local-file fallback for migration/bootstrap scenarios.
+        pass
+
     script_dir = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.normpath(os.path.join(script_dir, "..", data_path, filename))
     try:

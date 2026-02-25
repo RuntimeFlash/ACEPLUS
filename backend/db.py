@@ -1,6 +1,7 @@
 import os
 import threading
 import queue
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pytz import timezone as pytz_timezone
 from typing import Any, Dict, List, Optional, Tuple
@@ -272,6 +273,117 @@ class QuestionReportRepository:
             upsert=True,
         )
         return result.upserted_id is not None
+
+
+# -----------------------------------------------------------------------------
+# Static Content Repository (JSON content migrated to Mongo)
+# -----------------------------------------------------------------------------
+
+class StaticContentRepository:
+    """
+    Stores static JSON content in Mongo so runtime does not depend on local files.
+    Content is stored in class-9 DB as a single shared source.
+    """
+
+    _KNOWN_ALIASES = {
+        "students.json": "students.class9",
+        "class10_students.json": "students.class10",
+        "teachers.json": "teachers",
+        "update.json": "updates",
+        "lessons.json": "lessons.class9",
+        "lessons10.json": "lessons.class10",
+    }
+
+    def __init__(self, db_client: DatabaseClient) -> None:
+        self.db_client = db_client
+        self._col = db_client.get_collection("StaticContent", standard=9)
+        self._col.create_index([("kind", ASCENDING), ("rel_path", ASCENDING)])
+        self._col.create_index([("alias", ASCENDING)])
+        self._col.create_index([("standard", ASCENDING), ("subject", ASCENDING)])
+
+    @staticmethod
+    def _normalize_rel_path(path: str) -> str:
+        normalized = str(path or "").replace("\\", "/").strip()
+        normalized = normalized.lstrip("./")
+        if normalized.startswith("backend/data/"):
+            normalized = normalized[len("backend/data/"):]
+        if normalized.startswith("data/"):
+            normalized = normalized[len("data/"):]
+        if normalized.startswith("mongo://"):
+            normalized = normalized[len("mongo://"):]
+        if normalized.startswith("json:"):
+            normalized = normalized[len("json:"):]
+        return normalized
+
+    def upsert_json(
+        self,
+        rel_path: str,
+        content: Any,
+        standard: Optional[int] = None,
+        subject: Optional[str] = None,
+        alias: Optional[str] = None,
+    ) -> None:
+        rel = self._normalize_rel_path(rel_path)
+        doc_id = f"json:{rel}"
+        update_set: Dict[str, Any] = {
+            "kind": "json_file",
+            "rel_path": rel,
+            "content": content,
+            "updated_at": datetime.now(timezone.utc),
+        }
+        if standard is not None:
+            update_set["standard"] = int(standard)
+        if subject:
+            update_set["subject"] = subject
+        if alias:
+            update_set["alias"] = alias
+        self._col.update_one({"_id": doc_id}, {"$set": update_set}, upsert=True)
+
+    def upsert_alias(self, alias: str, content: Any) -> None:
+        doc_id = f"alias:{alias}"
+        self._col.update_one(
+            {"_id": doc_id},
+            {
+                "$set": {
+                    "kind": "alias",
+                    "alias": alias,
+                    "content": content,
+                    "updated_at": datetime.now(timezone.utc),
+                }
+            },
+            upsert=True,
+        )
+
+    def get_alias(self, alias: str) -> Optional[Any]:
+        doc = self._col.find_one({"_id": f"alias:{alias}"}, {"_id": 0, "content": 1})
+        if not doc:
+            return None
+        return doc.get("content")
+
+    def get_json(self, rel_path_or_name: str) -> Optional[Any]:
+        rel = self._normalize_rel_path(rel_path_or_name)
+        if not rel:
+            return None
+
+        alias_key = self._KNOWN_ALIASES.get(rel.lower())
+        if alias_key:
+            alias_doc = self.get_alias(alias_key)
+            if alias_doc is not None:
+                return alias_doc
+
+        doc = self._col.find_one({"_id": f"json:{rel}"}, {"_id": 0, "content": 1})
+        if doc:
+            return doc.get("content")
+
+        # Try lowercase Update alias fallback.
+        if rel == "Update.json":
+            alias_doc = self.get_alias("updates")
+            if alias_doc is not None:
+                return alias_doc
+        return None
+
+    def has_data(self) -> bool:
+        return self._col.estimated_document_count() > 0
 
 
 # -----------------------------------------------------------------------------
@@ -888,24 +1000,86 @@ class LeaderboardService:
 
 
 # -----------------------------------------------------------------------------
-# App-level instances and preload
+# Lazy app-level instances for better serverless cold start
 # -----------------------------------------------------------------------------
 
-_db_client = DatabaseClient()
-_write_queue = WriteQueue(_db_client, worker_count=1)
-user_repo = UserRepository(_db_client, _write_queue)
-exam_repo = ExamRepository(_db_client, _write_queue)
-test_repo = TestRepository(_db_client, _write_queue)
-leaderboard_service = LeaderboardService(_db_client, user_repo, _write_queue)
-upload_repo = UploadRepository(_db_client)
-question_report_repo = QuestionReportRepository(_db_client)
+@dataclass
+class _RepositoryContainer:
+    db_client: DatabaseClient
+    write_queue: WriteQueue
+    user_repo: UserRepository
+    exam_repo: ExamRepository
+    test_repo: TestRepository
+    leaderboard_service: LeaderboardService
+    upload_repo: UploadRepository
+    question_report_repo: QuestionReportRepository
+    static_content_repo: StaticContentRepository
+
+
+_container_lock = threading.Lock()
+_container: Optional[_RepositoryContainer] = None
+
+
+def _build_container() -> _RepositoryContainer:
+    db_client = DatabaseClient()
+    write_queue = WriteQueue(db_client, worker_count=1)
+    user = UserRepository(db_client, write_queue)
+    exam = ExamRepository(db_client, write_queue)
+    test = TestRepository(db_client, write_queue)
+    leaderboard = LeaderboardService(db_client, user, write_queue)
+    uploads = UploadRepository(db_client)
+    reports = QuestionReportRepository(db_client)
+    static_content = StaticContentRepository(db_client)
+    return _RepositoryContainer(
+        db_client=db_client,
+        write_queue=write_queue,
+        user_repo=user,
+        exam_repo=exam,
+        test_repo=test,
+        leaderboard_service=leaderboard,
+        upload_repo=uploads,
+        question_report_repo=reports,
+        static_content_repo=static_content,
+    )
+
+
+def _get_container() -> _RepositoryContainer:
+    global _container
+    if _container is None:
+        with _container_lock:
+            if _container is None:
+                _container = _build_container()
+    return _container
+
+
+class _LazyProxy:
+    def __init__(self, key: str) -> None:
+        self._key = key
+
+    def _target(self):
+        return getattr(_get_container(), self._key)
+
+    def __getattr__(self, item):
+        return getattr(self._target(), item)
+
+    def __repr__(self) -> str:
+        return f"<LazyProxy {self._key}>"
+
+
+user_repo = _LazyProxy("user_repo")
+exam_repo = _LazyProxy("exam_repo")
+test_repo = _LazyProxy("test_repo")
+leaderboard_service = _LazyProxy("leaderboard_service")
+upload_repo = _LazyProxy("upload_repo")
+question_report_repo = _LazyProxy("question_report_repo")
+static_content_repo = _LazyProxy("static_content_repo")
 
 
 def preload_caches():
     """Startup hook retained for compatibility; no RAM caches are used."""
     print("----- Pre-loading startup data -----")
     try:
-        leaderboard_service.preload_current_month_leaderboard()
+        _get_container().leaderboard_service.preload_current_month_leaderboard()
     except Exception as e:
         print(f"Error during startup pre-loading: {e}")
     print("----- Startup pre-loading finished -----")
@@ -924,6 +1098,7 @@ __all__ = [
     "leaderboard_service",
     "upload_repo",
     "question_report_repo",
+    "static_content_repo",
     "convert_objectid_to_str",
     "preload_caches",
 ]

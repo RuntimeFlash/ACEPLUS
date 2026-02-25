@@ -21,6 +21,7 @@ from utils.prompts import (
     HINT_GENERATION_PROMPT,
 )
 from utils.parse_files import parse_any
+from utils.data_utils import load_json_file
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -400,8 +401,7 @@ def generate_performance_analysis(results, lessons, is_class10):
     Generate a performance analysis based on exam results and lessons.
     """
     lessons_file = "lessons10.json" if is_class10 else "lessons.json"
-    with open(os.path.join("backend/data", lessons_file), "r") as f:
-        all_lessons = json.load(f)
+    all_lessons = load_json_file(lessons_file) or {}
 
     lesson_names = []
     for lesson in lessons:

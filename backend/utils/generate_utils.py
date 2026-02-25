@@ -112,6 +112,20 @@ def remove_duplicates_and_replace(questions, available_questions):
     return unique_questions
 
 def parse_questions_from_json(file_path):
+    if str(file_path).startswith("mongo://"):
+        rel_path = str(file_path)[len("mongo://"):]
+        try:
+            from db import static_content_repo
+
+            payload = static_content_repo.get_json(rel_path)
+            if isinstance(payload, list):
+                return payload
+            print(f"Mongo lesson payload is not a list for {rel_path}")
+            return []
+        except Exception as e:
+            print(f"Error reading Mongo lesson {rel_path}: {e}")
+            return []
+
     # Update to explicitly use UTF-8 encoding
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
