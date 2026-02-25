@@ -798,6 +798,26 @@ const ExamTaking = () => {
   const [visibleHints, setVisibleHints] = useState({});
   const [currentHint, setCurrentHint] = useState(null);
 
+  const applyExamData = (data, examId) => {
+    if (!data) return;
+
+    if (data.is_submitted) {
+      navigate(`/exam/results/${examId}`, { replace: true });
+      return;
+    }
+
+    const questionsWithIds = (data.questions || []).map((question, index) => ({
+      ...question,
+      uniqueId: `q${index + 1}`,
+    }));
+    setExamData({ ...data, questions: questionsWithIds });
+
+    const storedAnswers = localStorage.getItem(`answers_${examId}`);
+    if (storedAnswers) {
+      setAnswers(JSON.parse(storedAnswers));
+    }
+  };
+
   useEffect(() => {
     if (id === 'create' && !autoSubmitted.current) {
       autoSubmitted.current = true;
@@ -807,11 +827,16 @@ const ExamTaking = () => {
 
       const handleCreateExam = async (examConfig) => {
         try {
-          const examData = await api.createExam(examConfig);
-          navigate(`/exam/g/${examData['exam-id']}`, { replace: true });
+          const examResponse = await api.createExam(examConfig);
+          const examId = examResponse['exam-id'];
+          const createdExam = examResponse.exam;
+          navigate(`/exam/${examId}`, {
+            replace: true,
+            state: createdExam ? { examData: createdExam } : undefined,
+          });
         } catch (error) {
           console.error('Error auto-creating exam:', error);
-          navigate('/exam', { replace: true });
+          navigate('/create', { replace: true });
         }
       };
 
@@ -820,29 +845,21 @@ const ExamTaking = () => {
       } else if (subject && lessons) {
         handleCreateExam({ subject, lessons });
       } else {
-        navigate('/exam', { replace: true });
+        navigate('/create', { replace: true });
       }
     } else if (id && id !== 'create') {
+      const preloadedExam = location.state?.examData;
+      if (preloadedExam && preloadedExam['exam-id'] === id) {
+        applyExamData(preloadedExam, id);
+        setIsLoading(false);
+        return;
+      }
+
       const fetchExamData = async () => {
         setIsLoading(true);
         try {
           const data = await api.getExam(id);
-
-          if (data.is_submitted) {
-            navigate(`/exam/results/${id}`);
-            return;
-          }
-
-          const questionsWithIds = data.questions.map((question, index) => ({
-            ...question,
-            uniqueId: `q${index + 1}`,
-          }));
-          setExamData({ ...data, questions: questionsWithIds });
-
-          const storedAnswers = localStorage.getItem(`answers_${id}`);
-          if (storedAnswers) {
-            setAnswers(JSON.parse(storedAnswers));
-          }
+          applyExamData(data, id);
         } catch (error) {
           console.error('Error fetching exam data:', error);
         } finally {

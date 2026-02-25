@@ -29,7 +29,7 @@ const UnsubmittedExamPopup = ({ isOpen, onClose, unsubmittedExams = [], onExamDe
 
   const handleContinueExam = (examId) => {
     onClose();
-    navigate(`/exam/g/${examId}`);
+    navigate(`/exam/${examId}`);
   };
 
   const handleDeleteClick = (examId) => {

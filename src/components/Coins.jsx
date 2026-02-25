@@ -29,14 +29,14 @@ const handleActionClick = (action) => {
   const navigateFor = (action) => {
     if (action.type === 'exam') {
       if (action.lessons && action.lessons.length > 0) {
-        navigate('/exam/g/create', { state: { subject: action.subject, lessons: action.lessons } });
+        navigate('/exam/create', { state: { subject: action.subject, lessons: action.lessons } });
       } else {
         navigate('/create', { state: { subject: action.subject } });
       }
     } else if (action.type === 'navigate') {
       navigate(action.path);
     } else if (action.type === 'test') {
-      navigate('/exam/g/create', { state: { testId: action['test-id'] } });
+      navigate('/exam/create', { state: { testId: action['test-id'] } });
     }
   };
 
