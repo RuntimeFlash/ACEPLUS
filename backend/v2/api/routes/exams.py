@@ -1,10 +1,11 @@
 from typing import Any, Dict, List
 
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import JSONResponse
 
 from v2.core.auth import CurrentUser, get_current_user
 from v2.services.exam_service import exam_service
+from v2.services.replay_service import replay_service
 
 
 router = APIRouter(tags=["exams"])
@@ -109,6 +110,42 @@ def delete_unsubmitted_exam(
         exam_id=exam_id,
         user_id=current_user.user_id,
         is_class10=current_user.is_class10,
+    )
+    if not result["ok"]:
+        return JSONResponse(content={"message": result["message"]}, status_code=result["status_code"])
+    return JSONResponse(content=result["payload"], status_code=result["status_code"])
+
+
+@router.get("/mistake_replay")
+def get_mistake_replay(
+    limit: int = Query(default=20, ge=1, le=100),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    payload = replay_service.get_due_cards(
+        user_id=current_user.user_id,
+        is_class10=current_user.is_class10,
+        limit=limit,
+    )
+    return JSONResponse(content=payload, status_code=200)
+
+
+@router.post("/mistake_replay/review")
+def review_mistake_replay(
+    payload: Dict[str, Any] = Body(default={}),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    replay_id = str(payload.get("replay_id", "")).strip()
+    selected_option = str(payload.get("selected_option", "")).strip().lower()
+    if not replay_id:
+        return JSONResponse(content={"message": "replay_id is required"}, status_code=400)
+    if selected_option not in {"a", "b", "c", "d"}:
+        return JSONResponse(content={"message": "selected_option must be one of a/b/c/d"}, status_code=400)
+
+    result = replay_service.review_card(
+        replay_id=replay_id,
+        user_id=current_user.user_id,
+        is_class10=current_user.is_class10,
+        selected_option=selected_option,
     )
     if not result["ok"]:
         return JSONResponse(content={"message": result["message"]}, status_code=result["status_code"])

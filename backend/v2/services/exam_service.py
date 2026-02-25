@@ -13,6 +13,7 @@ from db import (
 )
 from utils.data_utils import calculate_lesson_analytics, decode_unicode
 from utils.name_utils import generate_memorable_name
+from v2.services.replay_service import replay_service
 
 
 class ExamService:
@@ -190,6 +191,19 @@ class ExamService:
 
         if not exam_repo.update_exam(exam_id, updated_data, is_class10):
             return {"ok": False, "status_code": 500, "message": "Failed to submit exam"}
+
+        try:
+            replay_service.ingest_exam_mistakes(
+                exam_id=exam_id,
+                user_id=user_id,
+                is_class10=is_class10,
+                subject=exam.get("subject", ""),
+                lessons=exam.get("lessons", []),
+                questions=exam.get("questions", []),
+                selected_answers=selected_answers,
+            )
+        except Exception:
+            pass
 
         try:
             user_repo.update_stats_after_exam(
