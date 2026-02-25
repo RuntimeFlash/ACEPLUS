@@ -24,5 +24,6 @@ if BACKEND_DIR not in sys.path:
 # Force serverless-safe behavior in backend runtime.
 os.environ.setdefault("SERVERLESS", "1")
 os.environ.setdefault("BACKEND_DATA_DIR", os.path.join(BACKEND_DIR, "data"))
+os.environ.setdefault("ACEPLUS_V2_DISABLE_LEGACY_BACKGROUND", "1")
 
-from main import app  # noqa: E402
+from v2.main import app  # noqa: E402
