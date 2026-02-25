@@ -1,13 +1,8 @@
 {
-  "functions": {
-    "api/index.py": {
-      "includeFiles": "backend/data/**"
-    }
-  },
-  "rewrites": [
-    { 
+ "rewrites": [
+    {
       "source": "/api/:path*",
-      "destination": "https://api-aceplus.vercel.app/api/:path*"
+      "destination": "https://aceplus-taupe.vercel.app/api/:path*"
     }
   ],
   "git": {
@@ -31,4 +26,4 @@
       ]
     }
   ]
-} 
+}
