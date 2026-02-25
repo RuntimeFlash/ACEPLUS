@@ -21,6 +21,42 @@ def get_exam(
     return JSONResponse(content=exam_data, status_code=200)
 
 
+@router.post("/create_exam")
+def create_exam(
+    payload: Dict[str, Any] = Body(default={}),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    result = exam_service.create_exam(
+        user_id=current_user.user_id,
+        is_class10=current_user.is_class10,
+        payload=payload,
+    )
+    if not result["ok"]:
+        return JSONResponse(content={"message": result["message"]}, status_code=result["status_code"])
+    return JSONResponse(content=result["payload"], status_code=result["status_code"])
+
+
+@router.post("/submit_exam/{exam_id}")
+def submit_exam(
+    exam_id: str,
+    payload: Dict[str, Any] = Body(default={}),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    selected_answers = payload.get("answers")
+    if not isinstance(selected_answers, list):
+        return JSONResponse(content={"message": "answers must be a list"}, status_code=400)
+
+    result = exam_service.submit_exam(
+        exam_id=exam_id,
+        user_id=current_user.user_id,
+        is_class10=current_user.is_class10,
+        selected_answers=selected_answers,
+    )
+    if not result["ok"]:
+        return JSONResponse(content={"message": result["message"]}, status_code=result["status_code"])
+    return JSONResponse(content=result["payload"], status_code=result["status_code"])
+
+
 @router.put("/exam/{exam_id}")
 def save_exam_answers(
     exam_id: str,
@@ -77,4 +113,3 @@ def delete_unsubmitted_exam(
     if not result["ok"]:
         return JSONResponse(content={"message": result["message"]}, status_code=result["status_code"])
     return JSONResponse(content=result["payload"], status_code=result["status_code"])
-
