@@ -275,18 +275,13 @@ class QuestionReportRepository:
 
 
 # -----------------------------------------------------------------------------
-# User Repository (user-centric schema, segregated by class DB) with RAM cache
+# User Repository (user-centric schema, segregated by class DB)
 # -----------------------------------------------------------------------------
 
 class UserRepository:
     def __init__(self, db_client: DatabaseClient, write_queue: WriteQueue) -> None:
         self.db_client = db_client
         self.write_queue = write_queue
-
-        # RAM caches (primary while process is running)
-        self._cache9: Dict[str, Dict[str, Any]] = {}
-        self._cache10: Dict[str, Dict[str, Any]] = {}
-        self._lock = threading.RLock()
 
         # Ensure indexes exist on both DBs
         for std in (9, 10):
@@ -295,74 +290,38 @@ class UserRepository:
             col.create_index([("standard", ASCENDING), ("division", ASCENDING)])
             col.create_index([("teacher", ASCENDING)])
 
-    # --------------- Cache helpers ---------------
-    def _cache_for(self, is_class10: bool) -> Dict[str, Dict[str, Any]]:
-        return self._cache10 if is_class10 else self._cache9
-
-    def _set_cached_user(self, user_doc: Dict[str, Any]) -> None:
-        std = int(user_doc.get("standard", 9))
-        is10 = (std == 10)
-        with self._lock:
-            self._cache_for(is10)[user_doc["id"]] = user_doc
-
-    def _get_cached_user(self, user_id: str, is_class10: Optional[bool]) -> Optional[Dict[str, Any]]:
-        with self._lock:
-            if is_class10 is None:
-                if user_id in self._cache9:
-                    return self._cache9[user_id]
-                if user_id in self._cache10:
-                    return self._cache10[user_id]
-                return None
-            cache = self._cache_for(is_class10)
-            return cache.get(user_id)
-
     def _col_for_user(self, user_id: str, is_class10: Optional[bool]) -> Tuple[Collection, bool]:
         """Resolve collection for user. If class unknown, probe 9 then 10. Returns (collection, is_class10)."""
         if is_class10 is not None:
             return self.db_client.get_collection("Users", is_class10=is_class10), is_class10
 
-        # Try RAM caches first
-        cached = self._get_cached_user(user_id, None)
-        if cached is not None:
-            std = int(cached.get("standard", 9))
-            return self.db_client.get_collection("Users", standard=std), (std == 10)
-
-        # Probe DB 9 then 10
         col9 = self.db_client.get_collection("Users", is_class10=False)
-        doc = col9.find_one({"id": user_id})
-        if doc:
+        if col9.find_one({"id": user_id}, {"_id": 1}):
             return col9, False
+
         col10 = self.db_client.get_collection("Users", is_class10=True)
-        doc = col10.find_one({"id": user_id})
-        if doc:
+        if col10.find_one({"id": user_id}, {"_id": 1}):
             return col10, True
-        # Default to class 9 if unknown (caller will insert)
-        return self.db_client.get_collection("Users", is_class10=False), False
+
+        # Default to class 9 if unknown (caller may insert).
+        return col9, False
 
     def get_user(self, user_id: str, is_class10: Optional[bool] = None) -> Optional[Dict[str, Any]]:
-        cached = self._get_cached_user(user_id, is_class10)
-        if cached is not None:
-            return cached
-
-        doc = None
         if is_class10 is not None:
             col = self.db_client.get_collection("Users", is_class10=is_class10)
             doc = col.find_one({"id": user_id})
             if doc:
-                self._set_cached_user(doc)
                 return doc
             other_col = self.db_client.get_collection("Users", is_class10=not is_class10)
-            doc = other_col.find_one({"id": user_id})
-        else:
-            col9 = self.db_client.get_collection("Users", is_class10=False)
-            doc = col9.find_one({"id": user_id})
-            if not doc:
-                col10 = self.db_client.get_collection("Users", is_class10=True)
-                doc = col10.find_one({"id": user_id})
+            return other_col.find_one({"id": user_id})
 
+        col9 = self.db_client.get_collection("Users", is_class10=False)
+        doc = col9.find_one({"id": user_id})
         if doc:
-            self._set_cached_user(doc)
-        return doc
+            return doc
+
+        col10 = self.db_client.get_collection("Users", is_class10=True)
+        return col10.find_one({"id": user_id})
 
     def create_user(
         self,
@@ -402,52 +361,21 @@ class UserRepository:
             "examHistory": [],
         }
 
-        # RAM first
-        self._set_cached_user(user_doc)
-
-        # Queue DB write
-        def _op():
-            col = self.db_client.get_collection("Users", standard=standard)
-            col.update_one({"id": user_id}, {"$setOnInsert": user_doc}, upsert=True)
-
-        self.write_queue.enqueue("user_create", callable=_op)
+        col = self.db_client.get_collection("Users", standard=standard)
+        col.update_one({"id": user_id}, {"$setOnInsert": user_doc}, upsert=True)
         return user_doc
 
     def set_password(self, user_id: str, new_password: str, is_class10: Optional[bool] = None) -> bool:
-        # RAM first
-        user = self.get_user(user_id, is_class10)
-        if not user:
-            return False
-        with self._lock:
-            user["password"] = new_password
-
-        # Queue DB write
-        def _op():
-            col, _ = self._col_for_user(user_id, is_class10)
-            col.update_one({"id": user_id}, {"$set": {"password": new_password}})
-
-        self.write_queue.enqueue("user_set_password", callable=_op)
-        return True
+        col, _ = self._col_for_user(user_id, is_class10)
+        result = col.update_one({"id": user_id}, {"$set": {"password": new_password}})
+        return result.matched_count > 0
 
     def update_tasks(self, user_id: str, tasks: Dict[str, Any], is_class10: Optional[bool] = None, coins: Optional[int] = None) -> None:
-        # RAM first
-        user = self.get_user(user_id, is_class10)
-        if not user:
-            return
-        with self._lock:
-            user["tasks"] = tasks
-            if coins is not None:
-                user["coins"] = coins
-
-        # Queue DB write
-        def _op():
-            col, _ = self._col_for_user(user_id, is_class10)
-            update_set = {"tasks": tasks}
-            if coins is not None:
-                update_set["coins"] = coins
-            col.update_one({"id": user_id}, {"$set": update_set})
-
-        self.write_queue.enqueue("user_update_tasks", callable=_op)
+        col, _ = self._col_for_user(user_id, is_class10)
+        update_set = {"tasks": tasks}
+        if coins is not None:
+            update_set["coins"] = coins
+        col.update_one({"id": user_id}, {"$set": update_set})
 
     def get_user_stats(self, user_id: str, is_class10: Optional[bool] = None) -> Optional[Dict[str, Any]]:
         user = self.get_user(user_id, is_class10)
@@ -472,21 +400,8 @@ class UserRepository:
         return None
 
     def add_exam_history(self, user_id: str, overview: Dict[str, Any], is_class10: Optional[bool] = None) -> None:
-        # RAM first
-        user = self.get_user(user_id, is_class10)
-        if not user:
-            return
-        with self._lock:
-            if "examHistory" not in user or not isinstance(user["examHistory"], list):
-                user["examHistory"] = []
-            user["examHistory"].append(overview)
-
-        # Queue DB write
-        def _op():
-            col, _ = self._col_for_user(user_id, is_class10)
-            col.update_one({"id": user_id}, {"$push": {"examHistory": overview}})
-
-        self.write_queue.enqueue("user_add_exam_history", callable=_op)
+        col, _ = self._col_for_user(user_id, is_class10)
+        col.update_one({"id": user_id}, {"$push": {"examHistory": overview}})
 
     def update_stats_after_exam(
         self,
@@ -505,76 +420,60 @@ class UserRepository:
         if not user:
             raise ValueError(f"User {user_id} not found")
 
-        with self._lock:
-            # Overall
-            overall = user.get("stats", {"attempted": 0, "correct": 0, "questions": 0, "avgPercentage": 0.0})
-            attempted = int(overall.get("attempted", 0)) + 1
-            correct = int(overall.get("correct", 0)) + score
-            questions = int(overall.get("questions", 0)) + total_questions
-            avg_percentage = (correct / questions * 100.0) if questions > 0 else 0.0
-            overall.update(
-                {
-                    "attempted": attempted,
-                    "correct": correct,
-                    "questions": questions,
-                    "avgPercentage": round(avg_percentage, 2),
-                }
-            )
-            user["stats"] = overall
+        overall = user.get("stats", {"attempted": 0, "correct": 0, "questions": 0, "avgPercentage": 0.0})
+        attempted = int(overall.get("attempted", 0)) + 1
+        correct = int(overall.get("correct", 0)) + score
+        questions = int(overall.get("questions", 0)) + total_questions
+        avg_percentage = (correct / questions * 100.0) if questions > 0 else 0.0
+        overall.update(
+            {
+                "attempted": attempted,
+                "correct": correct,
+                "questions": questions,
+                "avgPercentage": round(avg_percentage, 2),
+            }
+        )
 
-            # Subject stats
-            subjects = user.get("subjects", [])
-            subj = None
-            for s in subjects:
-                if s.get("subject") == subject:
-                    subj = s
-                    break
-            if not subj:
-                subj = {
-                    "subject": subject,
-                    "attempted": 0,
-                    "avgPercentage": 0.0,
-                    "marksGained": 0,
-                    "marksAttempted": 0,
-                    "highestMark": 0.0,
-                    "lowestMark": 0.0,
-                }
-                subjects.append(subj)
+        subjects = user.get("subjects", [])
+        subj = None
+        for s in subjects:
+            if s.get("subject") == subject:
+                subj = s
+                break
+        if not subj:
+            subj = {
+                "subject": subject,
+                "attempted": 0,
+                "avgPercentage": 0.0,
+                "marksGained": 0,
+                "marksAttempted": 0,
+                "highestMark": 0.0,
+                "lowestMark": 0.0,
+            }
+            subjects.append(subj)
 
-            subj_attempted = int(subj.get("attempted", 0)) + 1
-            subj_marks_gained = int(subj.get("marksGained", 0)) + score
-            subj_marks_attempted = int(subj.get("marksAttempted", 0)) + total_questions
-            subj_avg = (subj_marks_gained / subj_marks_attempted * 100.0) if subj_marks_attempted > 0 else 0.0
-            subj_high = max(float(subj.get("highestMark", 0.0)), float(percentage))
-            prev_low = float(subj.get("lowestMark", 0.0))
-            subj_low = (
-                float(percentage)
-                if prev_low == 0.0 and subj_attempted == 1
-                else (min(prev_low, float(percentage)) if prev_low > 0 else float(percentage))
-            )
-            subj.update(
-                {
-                    "attempted": subj_attempted,
-                    "avgPercentage": round(subj_avg, 2),
-                    "marksGained": subj_marks_gained,
-                    "marksAttempted": subj_marks_attempted,
-                    "highestMark": round(subj_high, 2),
-                    "lowestMark": round(subj_low, 2),
-                }
-            )
-            user["subjects"] = subjects
+        subj_attempted = int(subj.get("attempted", 0)) + 1
+        subj_marks_gained = int(subj.get("marksGained", 0)) + score
+        subj_marks_attempted = int(subj.get("marksAttempted", 0)) + total_questions
+        subj_avg = (subj_marks_gained / subj_marks_attempted * 100.0) if subj_marks_attempted > 0 else 0.0
+        subj_high = max(float(subj.get("highestMark", 0.0)), float(percentage))
+        prev_low = float(subj.get("lowestMark", 0.0))
+        subj_low = (
+            float(percentage)
+            if prev_low == 0.0 and subj_attempted == 1
+            else (min(prev_low, float(percentage)) if prev_low > 0 else float(percentage))
+        )
+        subj.update(
+            {
+                "attempted": subj_attempted,
+                "avgPercentage": round(subj_avg, 2),
+                "marksGained": subj_marks_gained,
+                "marksAttempted": subj_marks_attempted,
+                "highestMark": round(subj_high, 2),
+                "lowestMark": round(subj_low, 2),
+            }
+        )
 
-        # Queue DB write for stats/subjects
-        def _op_stats():
-            col, _ = self._col_for_user(user_id, is_class10)
-            col.update_one(
-                {"id": user_id},
-                {"$set": {"stats": user["stats"], "subjects": user["subjects"]}},
-            )
-
-        self.write_queue.enqueue("user_update_stats_subjects", callable=_op_stats)
-
-        # Append exam history in RAM + queue to DB
         overview_stats = {
             "exam-id": exam_id,
             "subject": subject,
@@ -588,8 +487,12 @@ class UserRepository:
         if test and test_name:
             overview_stats["test_name"] = test_name
 
-        self.add_exam_history(user_id, overview_stats, is_class10=is_class10)
-        return user["stats"], subj
+        col, _ = self._col_for_user(user_id, is_class10)
+        col.update_one(
+            {"id": user_id},
+            {"$set": {"stats": overall, "subjects": subjects}, "$push": {"examHistory": overview_stats}},
+        )
+        return overall, subj
 
     def get_user_exams_overview(self, user_id: str, is_class10: Optional[bool] = None) -> List[Dict[str, Any]]:
         user = self.get_user(user_id, is_class10)
@@ -605,62 +508,29 @@ class UserRepository:
         return history if isinstance(history, list) else []
 
     def set_question_history(self, user_id: str, history: List[str], is_class10: Optional[bool] = None) -> None:
-        user = self.get_user(user_id, is_class10)
-        if not user:
-            return
-        with self._lock:
-            user["questionHistory"] = history
-
-        def _op():
-            col, _ = self._col_for_user(user_id, is_class10)
-            col.update_one({"id": user_id}, {"$set": {"questionHistory": history}})
-
-        self.write_queue.enqueue("user_set_question_history", callable=_op)
+        col, _ = self._col_for_user(user_id, is_class10)
+        col.update_one({"id": user_id}, {"$set": {"questionHistory": history}})
 
     def get_all_students_by_standard(self, standard: int) -> List[Dict[str, Any]]:
-        # Fetch directly from DB (list operation) and optionally refresh cache entries
         col = self.db_client.get_collection("Users", standard=standard)
         students = list(col.find({"teacher": {"$ne": True}}))
         result = []
         for s in students:
             s.pop("_id", None)
-            self._set_cached_user(s)
             result.append(
                 {"id": s.get("id"), "name": s.get("name"), "division": s.get("division"), "roll": s.get("rollno")}
             )
         return result
 
-    def _load_all_users_to_cache(self) -> None:
-        """Fetch all users from both DBs and load them into the RAM cache."""
-        print("Pre-loading user caches...")
-        total_count = 0
-        for std in (9, 10):
-            try:
-                col = self.db_client.get_collection("Users", standard=std)
-                user_docs = list(col.find({}))
-                db_count = len(user_docs)
-                for user_doc in user_docs:
-                    user_doc.pop("_id", None)
-                    self._set_cached_user(user_doc)
-                total_count += db_count
-            except Exception as e:
-                print(f"ERROR: Could not load users for standard {std}. Reason: {e}")
-        print(f"Finished pre-loading. Total users loaded into cache: {total_count}.")
-
 
 # -----------------------------------------------------------------------------
-# Exam Repository (segregated by class DB) with RAM cache
+# Exam Repository (segregated by class DB)
 # -----------------------------------------------------------------------------
 
 class ExamRepository:
     def __init__(self, db_client: DatabaseClient, write_queue: WriteQueue) -> None:
         self.db_client = db_client
         self.write_queue = write_queue
-
-        # RAM caches
-        self._cache9: Dict[str, Dict[str, Any]] = {}
-        self._cache10: Dict[str, Dict[str, Any]] = {}
-        self._lock = threading.RLock()
 
         # Ensure indexes on both DBs
         for std in (9, 10):
@@ -669,140 +539,67 @@ class ExamRepository:
             col.create_index([("userId", ASCENDING), ("is_submitted", ASCENDING)])
             col.create_index([("submission_timestamp", DESCENDING)])
 
-    def _cache_for(self, is_class10: bool) -> Dict[str, Dict[str, Any]]:
-        return self._cache10 if is_class10 else self._cache9
-
-    def _set_cached_exam(self, exam_doc: Dict[str, Any]) -> None:
-        std = int(exam_doc.get("standard", 9))
-        is10 = (std == 10)
-        with self._lock:
-            self._cache_for(is10)[exam_doc["exam-id"]] = exam_doc
-
-    def _get_cached_exam(self, exam_id: str, is_class10: Optional[bool]) -> Optional[Dict[str, Any]]:
-        with self._lock:
-            if is_class10 is None:
-                if exam_id in self._cache9:
-                    return self._cache9[exam_id]
-                if exam_id in self._cache10:
-                    return self._cache10[exam_id]
-                return None
-            cache = self._cache_for(is_class10)
-            return cache.get(exam_id)
-
     def _col_by_params(self, is_class10: Optional[bool] = None, standard: Optional[int] = None) -> Collection:
         return self.db_client.get_collection("Exams", is_class10=is_class10, standard=standard)
 
     def add_exam(self, exam_data: Dict[str, Any], is_class10: Optional[bool] = None) -> Optional[Dict[str, Any]]:
-        # RAM first
-        self._set_cached_exam(exam_data)
-
-        # Queue DB write
-        def _op():
-            std = exam_data.get("standard")
-            col = self._col_by_params(is_class10=is_class10, standard=std)
-            col.insert_one(exam_data)
-
-        self.write_queue.enqueue("exam_add", callable=_op)
+        std = exam_data.get("standard")
+        col = self._col_by_params(is_class10=is_class10, standard=std)
+        col.insert_one(exam_data)
         return exam_data
 
     def get_exam(self, exam_id: str, is_class10: Optional[bool] = None) -> Optional[Dict[str, Any]]:
-        cached = self._get_cached_exam(exam_id, is_class10)
-        if cached is not None:
-            return cached
-
         if is_class10 is None:
             # Probe DB 9 then 10
             col9 = self._col_by_params(is_class10=False)
             doc = col9.find_one({"exam-id": exam_id})
             if doc:
-                self._set_cached_exam(doc)
                 return doc
             col10 = self._col_by_params(is_class10=True)
-            doc = col10.find_one({"exam-id": exam_id})
-            if doc:
-                self._set_cached_exam(doc)
-                return doc
-            return None
+            return col10.find_one({"exam-id": exam_id})
 
         col = self._col_by_params(is_class10=is_class10)
-        doc = col.find_one({"exam-id": exam_id})
-        if doc:
-            self._set_cached_exam(doc)
-        return doc
+        return col.find_one({"exam-id": exam_id})
 
     def update_exam(self, exam_id: str, updated_data: Dict[str, Any], is_class10: Optional[bool] = None) -> bool:
-        # RAM first
         exam = self.get_exam(exam_id, is_class10)
         if not exam:
             return False
-        with self._lock:
-            exam.update(updated_data)
-
-        # Queue DB write
-        def _op():
-            col = self._col_by_params(is_class10=is_class10, standard=exam.get("standard"))
-            col.update_one({"exam-id": exam_id}, {"$set": updated_data})
-
-        self.write_queue.enqueue("exam_update", callable=_op)
-        return True
+        col = self._col_by_params(standard=int(exam.get("standard", 9)))
+        result = col.update_one({"exam-id": exam_id}, {"$set": updated_data})
+        return result.matched_count > 0
 
     def update_exam_solution(self, exam_id: str, question_index: int, solution: str, is_class10: Optional[bool] = None) -> bool:
         exam = self.get_exam(exam_id, is_class10)
         if not exam:
             return False
-        with self._lock:
-            try:
-                if "results" in exam and 0 <= question_index < len(exam["results"]):
-                    exam["results"][question_index]["solution"] = solution
-            except Exception:
-                pass
 
-        def _op():
-            col = self._col_by_params(is_class10=is_class10, standard=exam.get("standard"))
-            update_field = f"results.{question_index}.solution"
-            col.update_one({"exam-id": exam_id}, {"$set": {update_field: solution}})
-
-        self.write_queue.enqueue("exam_update_solution", callable=_op)
-        return True
+        col = self._col_by_params(standard=int(exam.get("standard", 9)))
+        update_field = f"results.{question_index}.solution"
+        result = col.update_one({"exam-id": exam_id}, {"$set": {update_field: solution}})
+        return result.matched_count > 0
 
     def delete_exam(self, exam_id: str, is_class10: Optional[bool] = None) -> bool:
-        # Remove from cache
-        std = 9  # default standard
-        with self._lock:
-            # Try to find the exam in cache to determine its standard
-            exam = self._get_cached_exam(exam_id, is_class10)
-            if exam:
-                std = int(exam.get("standard", 9))
-            elif is_class10 is not None:
-                std = 10 if is_class10 else 9
-            # Remove from appropriate cache
-            cache = self._cache_for(std == 10)
-            cache.pop(exam_id, None)
+        if is_class10 is not None:
+            col = self._col_by_params(is_class10=is_class10)
+            return col.delete_one({"exam-id": exam_id}).deleted_count > 0
 
-        # Queue DB delete
-        def _op():
-            col = self._col_by_params(standard=std)
-            col.delete_one({"exam-id": exam_id})
-
-        self.write_queue.enqueue("exam_delete", callable=_op)
-        return True
+        col9 = self._col_by_params(is_class10=False)
+        deleted9 = col9.delete_one({"exam-id": exam_id}).deleted_count
+        if deleted9 > 0:
+            return True
+        col10 = self._col_by_params(is_class10=True)
+        return col10.delete_one({"exam-id": exam_id}).deleted_count > 0
 
 
 # -----------------------------------------------------------------------------
-# Test Repository (segregated by class DB) with RAM cache
+# Test Repository (segregated by class DB)
 # -----------------------------------------------------------------------------
 
 class TestRepository:
     def __init__(self, db_client: DatabaseClient, write_queue: WriteQueue) -> None:
         self.db_client = db_client
         self.write_queue = write_queue
-
-        # RAM caches
-        self._cache9: Dict[str, Dict[str, Any]] = {}
-        self._cache10: Dict[str, Dict[str, Any]] = {}
-        self._inactive9: Dict[str, Dict[str, Any]] = {}
-        self._inactive10: Dict[str, Dict[str, Any]] = {}
-        self._lock = threading.RLock()
 
         for std in (9, 10):
             col = db_client.get_collection("Tests", standard=std)
@@ -812,79 +609,38 @@ class TestRepository:
             inactive = db_client.get_collection("InactiveTests", standard=std)
             inactive.create_index([("test-id", ASCENDING)], unique=True)
 
-    def _cache_for(self, is_class10: bool) -> Dict[str, Dict[str, Any]]:
-        return self._cache10 if is_class10 else self._cache9
-
-    def _inactive_for(self, is_class10: bool) -> Dict[str, Dict[str, Any]]:
-        return self._inactive10 if is_class10 else self._inactive9
-
-    def _set_cached_test(self, test_doc: Dict[str, Any]) -> None:
-        std = int(test_doc.get("standard", 9))
-        is10 = (std == 10)
-        with self._lock:
-            self._cache_for(is10)[test_doc["test-id"]] = test_doc
-
     def add_test(self, test_data: Dict[str, Any], is_class10: Optional[bool] = None) -> Optional[Dict[str, Any]]:
-        # RAM first
-        self._set_cached_test(test_data)
-
-        def _op():
-            std = test_data.get("standard")
-            col = self.db_client.get_collection("Tests", standard=std)
-            col.insert_one(test_data)
-
-        self.write_queue.enqueue("test_add", callable=_op)
+        std = test_data.get("standard")
+        col = self.db_client.get_collection("Tests", is_class10=is_class10, standard=std)
+        col.insert_one(test_data)
         return test_data
 
     def get_test(self, test_id: str, is_class10: Optional[bool] = None) -> Optional[Dict[str, Any]]:
-        with self._lock:
-            if is_class10 is None:
-                if test_id in self._cache9:
-                    return self._cache9[test_id]
-                if test_id in self._cache10:
-                    return self._cache10[test_id]
-            else:
-                cache = self._cache_for(is_class10)
-                if test_id in cache:
-                    return cache[test_id]
-
-        # Fallback to DB
         if is_class10 is None:
             col9 = self.db_client.get_collection("Tests", is_class10=False)
             doc = col9.find_one({"test-id": test_id})
             if doc:
-                self._set_cached_test(doc)
                 return doc
             col10 = self.db_client.get_collection("Tests", is_class10=True)
-            doc = col10.find_one({"test-id": test_id})
-            if doc:
-                self._set_cached_test(doc)
-                return doc
-            return None
+            return col10.find_one({"test-id": test_id})
 
         col = self.db_client.get_collection("Tests", is_class10=is_class10)
-        doc = col.find_one({"test-id": test_id})
-        if doc:
-            self._set_cached_test(doc)
-        return doc
+        return col.find_one({"test-id": test_id})
 
     def get_all_tests(self, is_class10: Optional[bool] = None) -> List[Dict[str, Any]]:
-        # Fetch from DB to ensure completeness, then backfill cache
         if is_class10 is None:
-            tests = []
+            tests: List[Dict[str, Any]] = []
             for flag in (False, True):
                 col = self.db_client.get_collection("Tests", is_class10=flag)
                 docs = list(col.find({}))
                 for d in docs:
                     d.pop("_id", None)
-                    self._set_cached_test(d)
                 tests.extend(docs)
             return tests
         col = self.db_client.get_collection("Tests", is_class10=is_class10)
         docs = list(col.find({}))
         for d in docs:
             d.pop("_id", None)
-            self._set_cached_test(d)
         return docs
 
     def get_all_tests_by_standard(self, standard: int) -> List[Dict[str, Any]]:
@@ -892,43 +648,25 @@ class TestRepository:
         docs = list(col.find({"standard": int(standard)}))
         for d in docs:
             d.pop("_id", None)
-            self._set_cached_test(d)
         return docs
 
     def update_test(self, test_id: str, updated_data: Dict[str, Any], is_class10: Optional[bool] = None) -> bool:
         test = self.get_test(test_id, is_class10)
         if not test:
             return False
-        with self._lock:
-            test.update(updated_data)
-
-        def _op():
-            std = test.get("standard", 9)
-            col = self.db_client.get_collection("Tests", standard=std)
-            col.update_one({"test-id": test_id}, {"$set": updated_data})
-
-        self.write_queue.enqueue("test_update", callable=_op)
-        return True
+        col = self.db_client.get_collection("Tests", standard=int(test.get("standard", 9)))
+        result = col.update_one({"test-id": test_id}, {"$set": updated_data})
+        return result.matched_count > 0
 
     def delete_test(self, test_id: str, is_class10: Optional[bool] = None) -> bool:
         test = self.get_test(test_id, is_class10)
         if not test:
             return False
-        std = int(test.get("standard", 9))
-        is10 = (std == 10)
-        with self._lock:
-            cache = self._cache_for(is10)
-            cache.pop(test_id, None)
-
-        def _op():
-            col = self.db_client.get_collection("Tests", standard=std)
-            col.delete_one({"test-id": test_id})
-
-        self.write_queue.enqueue("test_delete", callable=_op)
-        return True
+        col = self.db_client.get_collection("Tests", standard=int(test.get("standard", 9)))
+        return col.delete_one({"test-id": test_id}).deleted_count > 0
 
     def move_expired_tests_to_inactive(self) -> int:
-        """Move expired tests to InactiveTests for both classes; update RAM and DB."""
+        """Move expired tests to InactiveTests for both classes."""
         from datetime import timezone as dt_tz
         now = datetime.now(dt_tz.utc)
         total_moved = 0
@@ -947,45 +685,19 @@ class TestRepository:
                     except Exception:
                         continue
                     if exp_dt < now:
-                        # RAM update
-                        with self._lock:
-                            cache = self._cache_for(is_class10)
-                            inactive_cache = self._inactive_for(is_class10)
-                            cache.pop(test["test-id"], None)
-                            tcopy = dict(test)
-                            tcopy.pop("_id", None)
-                            inactive_cache[test["test-id"]] = tcopy
-                        # Queue DB move
-                        def _op(doc=test, is10=is_class10):
-                            incol = self.db_client.get_collection("InactiveTests", is_class10=is10)
-                            tcol = self.db_client.get_collection("Tests", is_class10=is10)
-                            try:
-                                incol.insert_one(doc)
-                            finally:
-                                tcol.delete_one({"test-id": doc["test-id"]})
-
-                        self.write_queue.enqueue("test_move_expired", callable=_op)
-                        total_moved += 1
+                        test_copy = dict(test)
+                        test_copy.pop("_id", None)
+                        inactive_col.update_one(
+                            {"test-id": test_copy["test-id"]},
+                            {"$setOnInsert": test_copy},
+                            upsert=True,
+                        )
+                        deleted = tests_col.delete_one({"test-id": test_copy["test-id"]})
+                        if deleted.deleted_count > 0:
+                            total_moved += 1
         except Exception as e:
             print(f"Error during moving expired tests: {e}")
         return total_moved
-
-    def _load_all_tests_to_cache(self) -> None:
-        """Fetch all active tests from both DBs and load them into the RAM cache."""
-        print("Pre-loading test caches...")
-        total_count = 0
-        for std in (9, 10):
-            try:
-                col = self.db_client.get_collection("Tests", standard=std)
-                std_count = 0
-                for test_doc in col.find({}):
-                    test_doc.pop("_id", None)
-                    self._set_cached_test(test_doc)
-                    std_count += 1
-                total_count += std_count
-            except Exception as e:
-                print(f"ERROR: Could not load tests for standard {std}. Reason: {e}")
-        print(f"Finished pre-loading. Total active tests loaded into cache: {total_count}.")
 
 
 # -----------------------------------------------------------------------------
@@ -1172,7 +884,7 @@ class LeaderboardService:
                 {"$set": {"entries": entries, "version": version, "month": mk, "standard": standard}},
                 upsert=True,
             )
-        self.write_queue.enqueue("leaderboard_update_on_submission", callable=_op)
+        _op()
 
 
 # -----------------------------------------------------------------------------
@@ -1190,15 +902,13 @@ question_report_repo = QuestionReportRepository(_db_client)
 
 
 def preload_caches():
-    """Load primary data from DB into RAM caches at startup."""
-    print("----- Pre-loading all caches -----")
+    """Startup hook retained for compatibility; no RAM caches are used."""
+    print("----- Pre-loading startup data -----")
     try:
-        user_repo._load_all_users_to_cache()
-        test_repo._load_all_tests_to_cache()
         leaderboard_service.preload_current_month_leaderboard()
     except Exception as e:
-        print(f"Error during cache pre-loading: {e}")
-    print("----- Cache pre-loading finished -----")
+        print(f"Error during startup pre-loading: {e}")
+    print("----- Startup pre-loading finished -----")
 
 
 __all__ = [

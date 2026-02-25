@@ -1597,7 +1597,7 @@ if not SERVERLESS_MODE:
     unsubmitted_exams_thread.start()
 
 if __name__ == "__main__":
-    print("Preloading caches before starting server...")
+    print("Preparing startup data before starting server...")
     preload_caches()
     print("Server starting...")
     app.run(
