@@ -118,7 +118,6 @@ class ReplayService:
                     "lessons": doc.get("lessons", []),
                     "question": doc.get("question"),
                     "options": doc.get("options", {}),
-                    "correct_option": doc.get("correct_option"),
                     "due_at": doc.get("due_at"),
                     "interval_days": int(doc.get("interval_days", 0)),
                     "review_step": int(doc.get("review_step", 0)),
