@@ -709,6 +709,101 @@ class ExamRepository:
 
 
 # -----------------------------------------------------------------------------
+# Mistake Replay Repository (segregated by class DB)
+# -----------------------------------------------------------------------------
+
+class MistakeReplayRepository:
+    def __init__(self, db_client: DatabaseClient, write_queue: WriteQueue) -> None:
+        self.db_client = db_client
+        self.write_queue = write_queue
+
+        for std in (9, 10):
+            col = db_client.get_collection("MistakeReplay", standard=std)
+            col.create_index([("replay_id", ASCENDING)], unique=True)
+            col.create_index([("userId", ASCENDING), ("mistake_key", ASCENDING)], unique=True)
+            col.create_index([("userId", ASCENDING), ("is_active", ASCENDING), ("due_at_dt", ASCENDING)])
+            col.create_index([("due_at_dt", ASCENDING)])
+
+    def _col_by_params(self, is_class10: Optional[bool] = None, standard: Optional[int] = None) -> Collection:
+        return self.db_client.get_collection("MistakeReplay", is_class10=is_class10, standard=standard)
+
+    def upsert_card(
+        self,
+        card_data: Dict[str, Any],
+        is_class10: Optional[bool] = None,
+    ) -> bool:
+        standard = int(card_data.get("standard", 10 if is_class10 else 9))
+        col = self._col_by_params(is_class10=is_class10, standard=standard)
+        result = col.update_one(
+            {
+                "userId": card_data["userId"],
+                "mistake_key": card_data["mistake_key"],
+            },
+            {
+                "$set": card_data,
+                "$setOnInsert": {"created_at_dt": card_data.get("created_at_dt")},
+            },
+            upsert=True,
+        )
+        return bool(result.acknowledged)
+
+    def get_due_cards(
+        self,
+        user_id: str,
+        is_class10: bool,
+        now_utc: datetime,
+        limit: int = 20,
+    ) -> List[Dict[str, Any]]:
+        col = self._col_by_params(is_class10=is_class10)
+        docs = list(
+            col.find(
+                {
+                    "userId": user_id,
+                    "is_active": True,
+                    "due_at_dt": {"$lte": now_utc},
+                }
+            )
+            .sort("due_at_dt", ASCENDING)
+            .limit(max(1, min(int(limit), 100)))
+        )
+        return docs
+
+    def get_next_card(
+        self,
+        user_id: str,
+        is_class10: bool,
+    ) -> Optional[Dict[str, Any]]:
+        col = self._col_by_params(is_class10=is_class10)
+        return col.find_one(
+            {"userId": user_id, "is_active": True},
+            sort=[("due_at_dt", ASCENDING)],
+        )
+
+    def get_card_by_replay_id(
+        self,
+        replay_id: str,
+        user_id: str,
+        is_class10: bool,
+    ) -> Optional[Dict[str, Any]]:
+        col = self._col_by_params(is_class10=is_class10)
+        return col.find_one({"replay_id": replay_id, "userId": user_id, "is_active": True})
+
+    def update_card(
+        self,
+        replay_id: str,
+        user_id: str,
+        is_class10: bool,
+        update_data: Dict[str, Any],
+    ) -> bool:
+        col = self._col_by_params(is_class10=is_class10)
+        result = col.update_one(
+            {"replay_id": replay_id, "userId": user_id},
+            {"$set": update_data},
+        )
+        return result.matched_count > 0
+
+
+# -----------------------------------------------------------------------------
 # Test Repository (segregated by class DB)
 # -----------------------------------------------------------------------------
 
@@ -1072,6 +1167,7 @@ class _RepositoryContainer:
     write_queue: WriteQueue
     user_repo: UserRepository
     exam_repo: ExamRepository
+    replay_repo: MistakeReplayRepository
     test_repo: TestRepository
     leaderboard_service: LeaderboardService
     upload_repo: UploadRepository
@@ -1088,6 +1184,7 @@ def _build_container() -> _RepositoryContainer:
     write_queue = WriteQueue(db_client, worker_count=1)
     user = UserRepository(db_client, write_queue)
     exam = ExamRepository(db_client, write_queue)
+    replay = MistakeReplayRepository(db_client, write_queue)
     test = TestRepository(db_client, write_queue)
     leaderboard = LeaderboardService(db_client, user, write_queue)
     uploads = UploadRepository(db_client)
@@ -1098,6 +1195,7 @@ def _build_container() -> _RepositoryContainer:
         write_queue=write_queue,
         user_repo=user,
         exam_repo=exam,
+        replay_repo=replay,
         test_repo=test,
         leaderboard_service=leaderboard,
         upload_repo=uploads,
@@ -1131,6 +1229,7 @@ class _LazyProxy:
 
 user_repo = _LazyProxy("user_repo")
 exam_repo = _LazyProxy("exam_repo")
+replay_repo = _LazyProxy("replay_repo")
 test_repo = _LazyProxy("test_repo")
 leaderboard_service = _LazyProxy("leaderboard_service")
 upload_repo = _LazyProxy("upload_repo")
@@ -1153,10 +1252,12 @@ __all__ = [
     "WriteQueue",
     "UserRepository",
     "ExamRepository",
+    "MistakeReplayRepository",
     "TestRepository",
     "LeaderboardService",
     "user_repo",
     "exam_repo",
+    "replay_repo",
     "test_repo",
     "leaderboard_service",
     "upload_repo",
