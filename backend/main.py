@@ -78,8 +78,11 @@ def _get_env_int(name: str, default: int) -> int:
 
 def _resolve_data_path() -> str:
     configured = os.getenv("BACKEND_DATA_DIR")
+    cwd = os.getcwd()
     candidates = [
         configured,
+        os.path.join(cwd, "data"),
+        os.path.join(cwd, "backend", "data"),
         os.path.join(current_dir, "data"),
         os.path.join(current_dir, "backend", "data"),
         os.path.join(os.path.dirname(current_dir), "backend", "data"),
@@ -136,7 +139,48 @@ def _resolve_data_path() -> str:
     )
 
 
-data_path = _resolve_data_path()
+data_path = None
+student_info = {}
+class10_student_info = {}
+UPDATE_LOGS = []
+_data_load_error = None
+
+
+def _load_core_data() -> bool:
+    global data_path, student_info, class10_student_info, UPDATE_LOGS, _data_load_error
+
+    if data_path is not None:
+        return True
+
+    try:
+        resolved_path = _resolve_data_path()
+        with open(os.path.join(resolved_path, "students.json"), "r", encoding="utf-8") as f:
+            loaded_students = json.load(f)
+        with open(os.path.join(resolved_path, "class10_students.json"), "r", encoding="utf-8") as f:
+            loaded_class10_students = json.load(f)
+        with open(os.path.join(resolved_path, "Update.json"), "r", encoding="utf-8") as f:
+            loaded_updates = json.load(f)
+
+        data_path = resolved_path
+        student_info = loaded_students
+        class10_student_info = loaded_class10_students
+        UPDATE_LOGS = loaded_updates
+        _data_load_error = None
+        return True
+    except Exception as e:
+        _data_load_error = str(e)
+        print(f"Core data load failed: {_data_load_error}")
+        return False
+
+
+def _data_unavailable_response():
+    details = _data_load_error or "Unknown data load error"
+    return jsonify(
+        {
+            "message": "Server data files are unavailable",
+            "details": details,
+        }
+    ), 500
 
 # Configure upload settings from environment variables
 UPLOAD_FOLDER = os.path.join(
@@ -169,17 +213,11 @@ app.config["JWT_REFRESH_TOKEN_EXPIRES"] = False
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = _get_env_int('MAX_CONTENT_LENGTH', 16777216)  # Default 16MB
 
-# Load student information
-with open(os.path.join(data_path, "students.json"), "r", encoding="utf-8") as f:
-    student_info = json.load(f)
-with open(os.path.join(data_path, "class10_students.json"), "r", encoding="utf-8") as f:
-    class10_student_info = json.load(f)
-with open(os.path.join(data_path, "Update.json"), "r", encoding="utf-8") as f:
-    UPDATE_LOGS = json.load(f)
-
-
 @app.route("/api/login", methods=["POST"])
 def login():
+    if not _load_core_data():
+        return _data_unavailable_response()
+
     data = request.get_json()
     user_id = data.get("userId")
     password = data.get("password")
@@ -228,6 +266,9 @@ def login():
 
 @app.route("/api/register", methods=["POST"])
 def register():
+    if not _load_core_data():
+        return _data_unavailable_response()
+
     data = request.get_json()
     user_id = data.get("userId")
     registration_code = data.get("registrationCode")
@@ -270,6 +311,9 @@ def register():
 @app.route("/api/lessons", methods=["GET"])
 @jwt_required()
 def get_lessons():
+    if not _load_core_data():
+        return _data_unavailable_response()
+
     current_user, is_class10 = get_current_user_info()
 
     # Check if user is a teacher
@@ -285,8 +329,11 @@ def get_lessons():
         return jsonify({"message": "Subject parameter is required"}), 400
 
     lessons_file = "lessons10.json" if is_class10 else "lessons.json"
-    with open(os.path.join(data_path, lessons_file)) as f:
-        lessons = json.load(f)
+    try:
+        with open(os.path.join(data_path, lessons_file), "r", encoding="utf-8") as f:
+            lessons = json.load(f)
+    except Exception as e:
+        return jsonify({"message": f"Failed to load lessons data: {str(e)}"}), 500
 
     if subject not in lessons:
         return jsonify({"message": "Invalid subject"}), 400
@@ -1276,6 +1323,9 @@ def uploaded_file(filename):
 
 @app.route("/api/updates", methods=["GET"])
 def get_updates():
+    if not _load_core_data():
+        return _data_unavailable_response()
+
     updates = UPDATE_LOGS
     if updates:
         return jsonify(updates[0]), 200
