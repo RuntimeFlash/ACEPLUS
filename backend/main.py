@@ -20,7 +20,7 @@ try:
     import tempfile
     import time
     import traceback
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
 
     import generate
     from werkzeug.utils import secure_filename
@@ -382,6 +382,7 @@ def create_exam():
             print(f"Error generating questions: {e}")
             return jsonify({"message": f"Error generating questions: {str(e)}"}), 500
 
+    now_utc = datetime.now(timezone.utc)
     exam_data = {
         "exam-id": exam_id,
         "userId": current_user,
@@ -392,7 +393,8 @@ def create_exam():
         "is_submitted": False,
         "selected_answers": [],
         "class10": is_class10,
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "timestamp": now_utc.strftime("%Y-%m-%d %H:%M:%S"),
+        "timestamp_dt": now_utc,
         "test": is_test,
     }
     if is_test:
@@ -480,6 +482,7 @@ def submit_exam(exam_id):
         print(f"Error generating performance analysis: {e}")
         perf_analysis = None
 
+    submitted_at_utc = datetime.now(timezone.utc)
     updated_data = {
         "is_submitted": True,
         "selected_answers": selected_answers,
@@ -488,7 +491,8 @@ def submit_exam(exam_id):
         "results": initial_results,
         "lessons": exam["lessons"],
         "lesson_analytics": lesson_analytics,
-        "submission_timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "submission_timestamp": submitted_at_utc.strftime("%Y-%m-%d %H:%M:%S"),
+        "submission_timestamp_dt": submitted_at_utc,
         "test": exam.get("test", False),
         "performance_analysis": perf_analysis,
         "questions_needing_solutions": [q["index"] for q in questions_needing_solutions],
@@ -787,29 +791,9 @@ def report_question():
 def get_available_tests_for_user(user_id, is_class10):
     """Helper function to get all available tests for a specific user."""
     standard = 10 if is_class10 else 9
-    all_tests = test_repo.get_all_tests_by_standard(standard)
     user = user_repo.get_user(user_id, is_class10)
-
-    available_tests = []
-    for test in all_tests:
-        if user_id in test.get("completed_by", []):
-            continue
-
-        assigned_students = test.get("students")
-        assigned_division = test.get("division")
-        test_standard = test.get("standard")
-
-        if (test_standard == 10) != is_class10:
-            continue
-
-        if assigned_students and user_id in assigned_students:
-            available_tests.append(test)
-        elif assigned_division and user and user.get("division") == assigned_division:
-            available_tests.append(test)
-        elif not assigned_students and not assigned_division:
-            available_tests.append(test)
-
-    return available_tests
+    division = user.get("division") if user else None
+    return test_repo.get_available_tests_for_student(standard, user_id, division)
 
 
 @app.route("/api/tests", methods=["GET"])
@@ -820,18 +804,9 @@ def get_tests():
     is_teacher = current_user in teachers_data if teachers_data else False
 
     if is_teacher:
-        all_tests = test_repo.get_all_tests_by_standard(10 if is_class10 else 9)
-        available_tests = [
-            test for test in all_tests if test.get("created_by") == current_user
-        ]
+        available_tests = test_repo.get_tests_created_by(10 if is_class10 else 9, current_user)
     else:
         available_tests = get_available_tests_for_user(current_user, is_class10)
-
-    if not is_teacher:
-        available_tests = [
-            test for test in available_tests
-            if current_user not in test.get("completed_by", [])
-        ]
 
     if not available_tests and not is_teacher:
         return jsonify({"message": "No tests available"}), 404
@@ -1555,49 +1530,84 @@ def maintenance_delete_unsubmitted_exams():
 @jwt_required()
 def get_unsubmitted_exams_route():
     current_user, is_class10 = get_current_user_info()
-    
-    # Get all unsubmitted exams from the past 7 days
-    from datetime import datetime, timedelta
-    
+
     # Get collection for the user's standard
     col = exam_repo._col_by_params(is_class10=is_class10)
-    standard = 10 if is_class10 else 9
-    
-    # Find unsubmitted exams for this user
-    unsubmitted_exams = col.find({
-        "userId": current_user,
-        "is_submitted": False
-    })
-    
-    # Filter exams from past 7 days
-    cutoff_date = datetime.now() - timedelta(days=7)
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=7)
     recent_unsubmitted = []
-    
+
+    # Primary path: indexed timestamp_dt range query.
+    unsubmitted_exams = col.find(
+        {
+            "userId": current_user,
+            "is_submitted": False,
+            "timestamp_dt": {"$gte": cutoff_date},
+        },
+        {
+            "exam-id": 1,
+            "subject": 1,
+            "lessons": 1,
+            "timestamp": 1,
+            "timestamp_dt": 1,
+            "test": 1,
+            "test_name": 1,
+            "questions": 1,
+        },
+    )
+
     for exam in unsubmitted_exams:
-        try:
-            # Parse the timestamp string
-            exam_timestamp = datetime.strptime(exam["timestamp"], "%Y-%m-%d %H:%M:%S")
-            
-            # Check if the exam is within the past 7 days
-            if exam_timestamp > cutoff_date:
-                # Add to result list
-                exam_info = {
-                    "exam-id": exam["exam-id"],
-                    "subject": exam.get("subject", "Unknown"),
-                    "lessons": exam.get("lessons", []),
-                    "timestamp": exam["timestamp"],
-                    "test": exam.get("test", False),
-                    "test_name": exam.get("test_name", None),
-                    "question_count": len(exam.get("questions", []))
-                }
-                recent_unsubmitted.append(exam_info)
-        except Exception as e:
-            print(f"Error processing exam {exam.get('exam-id', 'unknown')}: {e}")
+        exam_info = {
+            "exam-id": exam["exam-id"],
+            "subject": exam.get("subject", "Unknown"),
+            "lessons": exam.get("lessons", []),
+            "timestamp": exam.get("timestamp"),
+            "test": exam.get("test", False),
+            "test_name": exam.get("test_name", None),
+            "question_count": len(exam.get("questions", [])),
+        }
+        recent_unsubmitted.append(exam_info)
+
+    # Legacy fallback for documents without timestamp_dt.
+    legacy_exams = col.find(
+        {
+            "userId": current_user,
+            "is_submitted": False,
+            "timestamp_dt": {"$exists": False},
+        },
+        {
+            "exam-id": 1,
+            "subject": 1,
+            "lessons": 1,
+            "timestamp": 1,
+            "test": 1,
+            "test_name": 1,
+            "questions": 1,
+        },
+    )
+    for exam in legacy_exams:
+        timestamp_str = exam.get("timestamp")
+        if not timestamp_str:
             continue
-    
-    # Sort by timestamp (newest first)
-    recent_unsubmitted.sort(key=lambda x: x["timestamp"], reverse=True)
-    
+        try:
+            exam_timestamp = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+        except Exception:
+            continue
+        if exam_timestamp < cutoff_date:
+            continue
+        recent_unsubmitted.append(
+            {
+                "exam-id": exam["exam-id"],
+                "subject": exam.get("subject", "Unknown"),
+                "lessons": exam.get("lessons", []),
+                "timestamp": timestamp_str,
+                "test": exam.get("test", False),
+                "test_name": exam.get("test_name", None),
+                "question_count": len(exam.get("questions", [])),
+            }
+        )
+
+    recent_unsubmitted.sort(key=lambda x: x.get("timestamp") or "", reverse=True)
+
     return jsonify({
         "unsubmitted_exams": recent_unsubmitted,
         "count": len(recent_unsubmitted)
