@@ -1,6 +1,6 @@
 import copy
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import generate
@@ -69,6 +69,7 @@ class ExamService:
                     "message": f"Error generating questions: {str(exc)}",
                 }
 
+        now_utc = datetime.now(timezone.utc)
         exam_data = {
             "exam-id": exam_id,
             "userId": user_id,
@@ -79,7 +80,8 @@ class ExamService:
             "is_submitted": False,
             "selected_answers": [],
             "class10": is_class10,
-            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "timestamp": now_utc.strftime("%Y-%m-%d %H:%M:%S"),
+            "timestamp_dt": now_utc,
             "test": is_test,
         }
         if is_test and isinstance(test_data, dict):
@@ -159,6 +161,7 @@ class ExamService:
         except Exception:
             performance_analysis = None
 
+        submitted_at_utc = datetime.now(timezone.utc)
         updated_data = {
             "is_submitted": True,
             "selected_answers": selected_answers,
@@ -167,7 +170,8 @@ class ExamService:
             "results": initial_results,
             "lessons": exam.get("lessons", []),
             "lesson_analytics": lesson_analytics,
-            "submission_timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "submission_timestamp": submitted_at_utc.strftime("%Y-%m-%d %H:%M:%S"),
+            "submission_timestamp_dt": submitted_at_utc,
             "test": exam.get("test", False),
             "performance_analysis": performance_analysis,
             "questions_needing_solutions": [q["index"] for q in questions_needing_solutions],
@@ -251,32 +255,78 @@ class ExamService:
 
     def get_recent_unsubmitted_exams(self, user_id: str, is_class10: bool) -> Dict[str, Any]:
         col = exam_repo._col_by_params(is_class10=is_class10)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=7)
         unsubmitted_exams = col.find(
             {
                 "userId": user_id,
                 "is_submitted": False,
+                "timestamp_dt": {"$gte": cutoff_date},
+            },
+            {
+                "exam-id": 1,
+                "subject": 1,
+                "lessons": 1,
+                "timestamp": 1,
+                "test": 1,
+                "test_name": 1,
+                "questions": 1,
             }
         )
-        cutoff_date = datetime.now() - timedelta(days=7)
         recent_unsubmitted: List[Dict[str, Any]] = []
 
         for exam in unsubmitted_exams:
+            recent_unsubmitted.append(
+                {
+                    "exam-id": exam["exam-id"],
+                    "subject": exam.get("subject", "Unknown"),
+                    "lessons": exam.get("lessons", []),
+                    "timestamp": exam.get("timestamp"),
+                    "test": exam.get("test", False),
+                    "test_name": exam.get("test_name"),
+                    "question_count": len(exam.get("questions", [])),
+                }
+            )
+
+        # Legacy fallback for exams created before timestamp_dt existed.
+        legacy_unsubmitted = col.find(
+            {
+                "userId": user_id,
+                "is_submitted": False,
+                "timestamp_dt": {"$exists": False},
+            },
+            {
+                "exam-id": 1,
+                "subject": 1,
+                "lessons": 1,
+                "timestamp": 1,
+                "test": 1,
+                "test_name": 1,
+                "questions": 1,
+            },
+        )
+        for exam in legacy_unsubmitted:
+            timestamp_str = exam.get("timestamp")
+            if not timestamp_str:
+                continue
             try:
-                exam_timestamp = datetime.strptime(exam["timestamp"], "%Y-%m-%d %H:%M:%S")
-                if exam_timestamp > cutoff_date:
-                    recent_unsubmitted.append(
-                        {
-                            "exam-id": exam["exam-id"],
-                            "subject": exam.get("subject", "Unknown"),
-                            "lessons": exam.get("lessons", []),
-                            "timestamp": exam["timestamp"],
-                            "test": exam.get("test", False),
-                            "test_name": exam.get("test_name"),
-                            "question_count": len(exam.get("questions", [])),
-                        }
-                    )
+                exam_timestamp = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S").replace(
+                    tzinfo=timezone.utc
+                )
             except Exception:
                 continue
+            if exam_timestamp < cutoff_date:
+                continue
+            recent_unsubmitted.append(
+                {
+                    "exam-id": exam["exam-id"],
+                    "subject": exam.get("subject", "Unknown"),
+                    "lessons": exam.get("lessons", []),
+                    "timestamp": timestamp_str,
+                    "test": exam.get("test", False),
+                    "test_name": exam.get("test_name"),
+                    "question_count": len(exam.get("questions", [])),
+                }
+            )
 
         recent_unsubmitted.sort(key=lambda item: item["timestamp"], reverse=True)
         return {

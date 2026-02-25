@@ -625,7 +625,7 @@ class UserRepository:
 
     def get_all_students_by_standard(self, standard: int) -> List[Dict[str, Any]]:
         col = self.db_client.get_collection("Users", standard=standard)
-        students = list(col.find({"teacher": {"$ne": True}}))
+        students = list(col.find({"teacher": False}))
         result = []
         for s in students:
             s.pop("_id", None)
@@ -650,6 +650,8 @@ class ExamRepository:
             col.create_index([("exam-id", ASCENDING)], unique=True)
             col.create_index([("userId", ASCENDING), ("is_submitted", ASCENDING)])
             col.create_index([("submission_timestamp", DESCENDING)])
+            col.create_index([("userId", ASCENDING), ("is_submitted", ASCENDING), ("timestamp_dt", DESCENDING)])
+            col.create_index([("is_submitted", ASCENDING), ("timestamp_dt", ASCENDING)])
 
     def _col_by_params(self, is_class10: Optional[bool] = None, standard: Optional[int] = None) -> Collection:
         return self.db_client.get_collection("Exams", is_class10=is_class10, standard=standard)
@@ -718,6 +720,9 @@ class TestRepository:
             col.create_index([("test-id", ASCENDING)], unique=True)
             col.create_index([("standard", ASCENDING)])
             col.create_index([("expiration_date", ASCENDING)])
+            col.create_index([("standard", ASCENDING), ("created_by", ASCENDING)])
+            col.create_index([("standard", ASCENDING), ("division", ASCENDING)])
+            col.create_index([("standard", ASCENDING), ("students", ASCENDING)])
             inactive = db_client.get_collection("InactiveTests", standard=std)
             inactive.create_index([("test-id", ASCENDING)], unique=True)
 
@@ -761,6 +766,62 @@ class TestRepository:
         for d in docs:
             d.pop("_id", None)
         return docs
+
+    def get_tests_created_by(self, standard: int, created_by: str) -> List[Dict[str, Any]]:
+        col = self.db_client.get_collection("Tests", standard=standard)
+        docs = list(col.find({"standard": int(standard), "created_by": created_by}))
+        for d in docs:
+            d.pop("_id", None)
+        return docs
+
+    def get_available_tests_for_student(
+        self,
+        standard: int,
+        user_id: str,
+        division: Optional[str],
+    ) -> List[Dict[str, Any]]:
+        """
+        Fetch tests directly from Mongo for a student instead of loading all tests and filtering in Python.
+        """
+        col = self.db_client.get_collection("Tests", standard=standard)
+        base_filter: Dict[str, Any] = {
+            "standard": int(standard),
+            "completed_by": {"$ne": user_id},
+        }
+        assignment_filters: List[Dict[str, Any]] = [
+            {"students": user_id},
+            {
+                "$and": [
+                    {"$or": [{"students": {"$exists": False}}, {"students": []}, {"students": None}]},
+                    {"$or": [{"division": {"$exists": False}}, {"division": None}, {"division": ""}]},
+                ]
+            },
+        ]
+        if division:
+            assignment_filters.append({"division": division})
+
+        docs = list(col.find({"$and": [base_filter, {"$or": assignment_filters}]}))
+        results: List[Dict[str, Any]] = []
+
+        for doc in docs:
+            completed_by = doc.get("completed_by", []) or []
+            if user_id in completed_by:
+                continue
+
+            assigned_students = doc.get("students")
+            assigned_division = doc.get("division")
+
+            if assigned_students:
+                if user_id not in assigned_students:
+                    continue
+            elif assigned_division:
+                if not division or division != assigned_division:
+                    continue
+
+            doc.pop("_id", None)
+            results.append(doc)
+
+        return results
 
     def update_test(self, test_id: str, updated_data: Dict[str, Any], is_class10: Optional[bool] = None) -> bool:
         test = self.get_test(test_id, is_class10)
