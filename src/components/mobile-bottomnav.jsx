@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { RiDashboardLine, RiFileAddLine, RiBarChartLine, RiHistoryLine, RiFileTextLine, RiArrowLeftLine } from 'react-icons/ri';
+import { RiDashboardLine, RiFileAddLine, RiBarChartLine, RiHistoryLine, RiFileTextLine, RiArrowLeftLine, RiLoopLeftLine } from 'react-icons/ri';
 import './mobile-bottomnav.css';
 
 function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
-  const mainRoutes = ['/', '/home', '/create', '/test-series', '/analyse', '/history'];
+  const mainRoutes = ['/', '/home', '/create', '/test-series', '/analyse', '/history', '/replay'];
   const isMainRoute = mainRoutes.includes(location.pathname);
 
   // Normalize active route logic: treat "/" and "/home" as Dashboard
@@ -164,6 +164,15 @@ function BottomNav() {
         >
           <RiHistoryLine />
           <span>History</span>
+        </button>
+        <button
+          onClick={() => navigate('/replay')}
+          className={`nav-item ${location.pathname === '/replay' ? 'active' : ''}`}
+          aria-label="Mistake replay"
+          aria-current={location.pathname === '/replay' ? 'page' : undefined}
+        >
+          <RiLoopLeftLine />
+          <span>Replay</span>
         </button>
       </nav>
     </div>
