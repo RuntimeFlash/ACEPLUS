@@ -107,6 +107,27 @@ To install and set up AcePlus, follow these steps:
     npm install
     ```
 
+4. **Install backend dev dependencies (for tests):**
+
+    ```bash
+    pip install -r backend/requirements-dev.txt
+    ```
+
+## Testing
+
+Run backend unit tests from repository root:
+
+```bash
+npm run test-backend
+```
+
+Or directly:
+
+```bash
+cd backend
+pytest
+```
+
 ## Usage
 
 ### Running the Application
