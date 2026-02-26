@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
-from pymongo import ASCENDING
+from pymongo import ASCENDING, DESCENDING
 from pymongo.collection import Collection
 
 from .base import DatabaseClient, WriteQueue
@@ -72,9 +72,3 @@ class ExamRepository:
             return True
         col10 = self._col_by_params(is_class10=True)
         return col10.delete_one({"exam-id": exam_id}).deleted_count > 0
-
-
-# -----------------------------------------------------------------------------
-# Mistake Replay Repository (segregated by class DB)
-# -----------------------------------------------------------------------------
-

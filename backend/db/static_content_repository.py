@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional
 from pymongo import ASCENDING
 
 from .base import DatabaseClient
+from utils.static_content_utils import KNOWN_STATIC_CONTENT_ALIASES, normalize_static_rel_path
 
 class StaticContentRepository:
     """
@@ -13,42 +14,12 @@ class StaticContentRepository:
     Content is stored in class-9 DB as a single shared source.
     """
 
-    _KNOWN_ALIASES = {
-        "students.json": "students.class9",
-        "class10_students.json": "students.class10",
-        "teachers.json": "teachers",
-        "update.json": "updates",
-        "lessons.json": "lessons.class9",
-        "lessons10.json": "lessons.class10",
-    }
-
     def __init__(self, db_client: DatabaseClient) -> None:
         self.db_client = db_client
         self._col = db_client.get_collection("StaticContent", standard=9)
         self._col.create_index([("kind", ASCENDING), ("rel_path", ASCENDING)])
         self._col.create_index([("alias", ASCENDING)])
         self._col.create_index([("standard", ASCENDING), ("subject", ASCENDING)])
-
-    @staticmethod
-    def _normalize_rel_path(path: str) -> str:
-        normalized = str(path or "").replace("\\", "/").strip()
-        normalized = normalized.lstrip("./")
-        normalized_lower = normalized.lower()
-        if normalized_lower.startswith("legacy json qs/"):
-            normalized = normalized[len("Legacy Json Qs/"):]
-            normalized_lower = normalized.lower()
-        if normalized_lower.startswith("backend/data/"):
-            normalized = normalized[len("backend/data/"):]
-            normalized_lower = normalized.lower()
-        if normalized_lower.startswith("data/"):
-            normalized = normalized[len("data/"):]
-            normalized_lower = normalized.lower()
-        if normalized_lower.startswith("mongo://"):
-            normalized = normalized[len("mongo://"):]
-            normalized_lower = normalized.lower()
-        if normalized_lower.startswith("json:"):
-            normalized = normalized[len("json:"):]
-        return normalized
 
     def upsert_json(
         self,
@@ -58,7 +29,7 @@ class StaticContentRepository:
         subject: Optional[str] = None,
         alias: Optional[str] = None,
     ) -> None:
-        rel = self._normalize_rel_path(rel_path)
+        rel = normalize_static_rel_path(rel_path)
         doc_id = f"json:{rel}"
         update_set: Dict[str, Any] = {
             "kind": "json_file",
@@ -96,11 +67,11 @@ class StaticContentRepository:
         return doc.get("content")
 
     def get_json(self, rel_path_or_name: str) -> Optional[Any]:
-        rel = self._normalize_rel_path(rel_path_or_name)
+        rel = normalize_static_rel_path(rel_path_or_name)
         if not rel:
             return None
 
-        alias_key = self._KNOWN_ALIASES.get(rel.lower())
+        alias_key = KNOWN_STATIC_CONTENT_ALIASES.get(rel.lower())
         if alias_key:
             alias_doc = self.get_alias(alias_key)
             if alias_doc is not None:
@@ -119,9 +90,3 @@ class StaticContentRepository:
 
     def has_data(self) -> bool:
         return self._col.estimated_document_count() > 0
-
-
-# -----------------------------------------------------------------------------
-# User Repository (user-centric schema, segregated by class DB)
-# -----------------------------------------------------------------------------
-
