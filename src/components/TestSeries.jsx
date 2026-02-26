@@ -445,7 +445,7 @@ function TestSeries() {
       setTimeout(() => {
         const examId = examResponse['exam-id'];
         const createdExam = examResponse.exam;
-        navigate(`/exam/${examId}`, {
+        navigate(`/exam/g/${examId}`, {
           state: createdExam ? { examData: createdExam } : undefined,
         });
       }, 100);

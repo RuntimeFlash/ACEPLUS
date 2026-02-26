@@ -37,7 +37,7 @@ const ScrollToTop = () => {
 
 const ExamLegacyRedirect = () => {
   const { id } = useParams();
-  return <Navigate to={`/exam/${id}`} replace />;
+  return <Navigate to={`/exam/g/${id}`} replace />;
 };
 
 function App() {
@@ -139,7 +139,7 @@ function App() {
           }
         />
         <Route
-          path="/exam/g/:id"
+          path="/exam/:id"
           element={
             <ProtectedRoute updateAuthState={updateAuthState}>
               <ExamLegacyRedirect />

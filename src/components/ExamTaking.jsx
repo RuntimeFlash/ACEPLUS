@@ -830,7 +830,7 @@ const ExamTaking = () => {
           const examResponse = await api.createExam(examConfig);
           const examId = examResponse['exam-id'];
           const createdExam = examResponse.exam;
-          navigate(`/exam/${examId}`, {
+          navigate(`/exam/g/${examId}`, {
             replace: true,
             state: createdExam ? { examData: createdExam } : undefined,
           });
