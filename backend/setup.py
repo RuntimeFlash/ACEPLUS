@@ -29,7 +29,9 @@ def create_json_files():
         'teachers.json': {}
     }
     
-    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(backend_dir)
+    data_dir = os.path.join(repo_root, 'Legacy Json Qs')
     
     # Create data directory if it doesn't exist
     if not os.path.exists(data_dir):
@@ -52,8 +54,9 @@ def create_json_files():
 def create_directories():
     """Create necessary directories"""
     base_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(base_dir)
     directories = [
-        os.path.join(base_dir, 'data', 'reports'),
+        os.path.join(repo_root, 'Legacy Json Qs', 'reports'),
         os.path.join(base_dir, 'pdfs'),
         os.path.join(base_dir, 'uploads')
     ]

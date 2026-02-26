@@ -1,6 +1,14 @@
 import json
 import os
 
+def _default_data_root():
+    configured = os.getenv("BACKEND_DATA_DIR")
+    if configured:
+        return configured
+    backend_dir = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+    repo_root = os.path.dirname(backend_dir)
+    return os.path.join(repo_root, "Legacy Json Qs")
+
 def load_json_file(filename, data_path="data"):
     try:
         from db import static_content_repo
@@ -12,8 +20,17 @@ def load_json_file(filename, data_path="data"):
         # Keep local-file fallback for migration/bootstrap scenarios.
         pass
 
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    full_path = os.path.normpath(os.path.join(script_dir, "..", data_path, filename))
+    if os.path.isabs(data_path):
+        base_dir = data_path
+    else:
+        default_root = _default_data_root()
+        normalized_data_path = str(data_path).replace("\\", "/").strip().strip("/")
+        if normalized_data_path in ("", "data", "./data", "backend/data"):
+            base_dir = default_root
+        else:
+            base_dir = os.path.join(default_root, normalized_data_path)
+
+    full_path = os.path.normpath(os.path.join(base_dir, filename))
     try:
         with open(full_path, "r", encoding="utf-8") as f:
             data = json.load(f)

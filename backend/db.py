@@ -307,13 +307,20 @@ class StaticContentRepository:
     def _normalize_rel_path(path: str) -> str:
         normalized = str(path or "").replace("\\", "/").strip()
         normalized = normalized.lstrip("./")
-        if normalized.startswith("backend/data/"):
+        normalized_lower = normalized.lower()
+        if normalized_lower.startswith("legacy json qs/"):
+            normalized = normalized[len("Legacy Json Qs/"):]
+            normalized_lower = normalized.lower()
+        if normalized_lower.startswith("backend/data/"):
             normalized = normalized[len("backend/data/"):]
-        if normalized.startswith("data/"):
+            normalized_lower = normalized.lower()
+        if normalized_lower.startswith("data/"):
             normalized = normalized[len("data/"):]
-        if normalized.startswith("mongo://"):
+            normalized_lower = normalized.lower()
+        if normalized_lower.startswith("mongo://"):
             normalized = normalized[len("mongo://"):]
-        if normalized.startswith("json:"):
+            normalized_lower = normalized.lower()
+        if normalized_lower.startswith("json:"):
             normalized = normalized[len("json:"):]
         return normalized
 

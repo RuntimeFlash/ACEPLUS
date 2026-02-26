@@ -184,7 +184,7 @@ AcePlus uses environment variables to manage configuration. Here's how to set th
 
 #### **Student Data:**
 
-Student data is stored in JSON files within the `backend/data` directory (visible after running [Backend Setup](#backend-setup)).
+Student data is stored in JSON files within the `Legacy Json Qs` directory at the repository root (visible after running [Backend Setup](#backend-setup)).
 
 -   `students.json`: Contains data for Class 9 students.
 -   `class10_students.json`: Contains data for Class 10 students.
@@ -221,7 +221,7 @@ Each file contains a JSON object where:
 
 #### **Teacher Data:**
 
-Teacher data is stored in the `teachers.json` file within the `backend/data` directory.
+Teacher data is stored in the `teachers.json` file within the `Legacy Json Qs` directory at the repository root.
 
 It's a JSON object where:
 
@@ -299,9 +299,9 @@ AcePlus allows you to add lessons using PDF files. Here's how the process works:
         2. Process each PDF using the configured AI model (Gemini).
         3. Extract questions, options, and answers from the PDFs.
         4. Format the extracted data into JSON.
-        5. Save the generated questions in the `backend/data/lessons` (for Class 9) or `backend/data/lessons10` (for Class 10) directory, organized by subject.
-        6. Create a `lessons.json` (or `lessons10.json`) file in `backend/data` that lists the available lessons for each subject.
-        7. Store any incorrect questions (identified by the verification process) in the `backend/data/incorrect_questions` directory.
+        5. Save the generated questions in the `Legacy Json Qs/lessons` (for Class 9) or `Legacy Json Qs/lessons10` (for Class 10) directory, organized by subject.
+        6. Create a `lessons.json` (or `lessons10.json`) file in `Legacy Json Qs` that lists the available lessons for each subject.
+        7. Store any incorrect questions (identified by the verification process) in the `Legacy Json Qs/incorrect_questions` directory.
     
     **Important Notes:**
     -   Ensure that you have set up the environment variables correctly. Refer to the [Environment Setup](#environment-setup) section for configuration details.
