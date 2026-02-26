@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from v2.api.router import api_router
-from v2.compat.legacy import mount_legacy_app
 from v2.core.settings import settings
 
 
@@ -31,7 +30,6 @@ def create_app() -> FastAPI:
         return {"status": "ok", "service": "aceplus-backend-v2"}
 
     app.include_router(api_router)
-    mount_legacy_app(app)
     return app
 
 

@@ -86,7 +86,7 @@ def main():
     create_directories()
     
     print("\n✨ Setup completed successfully!")
-    print("\n Now you can start backend server by running: `npm run start-backend`!")
+    print("\n Now you can start the FastAPI backend by running: `npm run start-backend`!")
 
 if __name__ == "__main__":
     main() 
