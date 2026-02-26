@@ -1363,7 +1363,7 @@ const ExamResults = ({ onTaskCompletion }) => {
           const examData = await api.getExam(id);
 
           if (!examData.is_submitted) {
-            navigate(`/exam/${id}`);
+            navigate(`/exam/g/${id}`);
             return;
           }
 
