@@ -25,4 +25,4 @@ if BACKEND_DIR not in sys.path:
 os.environ.setdefault("SERVERLESS", "1")
 os.environ.setdefault("BACKEND_DATA_DIR", os.path.join(BACKEND_DIR, "data"))
 
-from v2.main import app  # noqa: E402
+from main import app  # noqa: E402

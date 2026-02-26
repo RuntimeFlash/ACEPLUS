@@ -3,9 +3,9 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import JSONResponse
 
-from v2.core.auth import CurrentUser, get_current_user
-from v2.services.auth_service import auth_service
-from v2.services.static_data import static_data_service
+from core.auth import CurrentUser, get_current_user
+from services.auth_service import auth_service
+from services.static_data import static_data_service
 
 
 router = APIRouter(tags=["auth"])

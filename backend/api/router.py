@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from v2.api.routes import auth, exams, public
+from api.routes import auth, exams, public
 
 
 api_router = APIRouter(prefix="/api")

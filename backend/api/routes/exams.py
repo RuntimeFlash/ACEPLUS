@@ -3,9 +3,9 @@ from typing import Any, Dict, List
 from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import JSONResponse
 
-from v2.core.auth import CurrentUser, get_current_user
-from v2.services.exam_service import exam_service
-from v2.services.replay_service import replay_service
+from core.auth import CurrentUser, get_current_user
+from services.exam_service import exam_service
+from services.replay_service import replay_service
 
 
 router = APIRouter(tags=["exams"])
