@@ -95,10 +95,13 @@ class ExamService:
         created_exam = self.get_exam(exam_id, is_class10)
         if not created_exam:
             return {"ok": False, "status_code": 500, "message": "Error loading created exam"}
+        response_payload = {**created_exam, "exam-id": created_exam.get("exam-id", exam_id)}
+        # Keep legacy nested shape while also returning /api/exam-compatible top-level fields.
+        response_payload["exam"] = created_exam
         return {
             "ok": True,
             "status_code": 201,
-            "payload": {"exam-id": exam_id, "exam": created_exam},
+            "payload": response_payload,
         }
 
     def submit_exam(
