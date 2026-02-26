@@ -91,7 +91,14 @@ class ExamService:
         created = exam_repo.add_exam(exam_data, is_class10)
         if not created:
             return {"ok": False, "status_code": 500, "message": "Error creating exam"}
-        return {"ok": True, "status_code": 201, "payload": {"exam-id": exam_id}}
+        created_exam = self.get_exam(exam_id, is_class10)
+        if not created_exam:
+            return {"ok": False, "status_code": 500, "message": "Error loading created exam"}
+        return {
+            "ok": True,
+            "status_code": 201,
+            "payload": {"exam-id": exam_id, "exam": created_exam},
+        }
 
     def submit_exam(
         self,

@@ -434,7 +434,7 @@ function TestSeries() {
     progressInterval.current = setInterval(updateProgress, 5);
 
     try {
-      const examData = await api.createExam({
+      const examResponse = await api.createExam({
         test: true,
         'test-id': testId,
       });
@@ -443,7 +443,11 @@ function TestSeries() {
       setProgress(100);
       
       setTimeout(() => {
-        navigate(`/exam/g/${examData['exam-id']}`);
+        const examId = examResponse['exam-id'];
+        const createdExam = examResponse.exam;
+        navigate(`/exam/${examId}`, {
+          state: createdExam ? { examData: createdExam } : undefined,
+        });
       }, 100);
     } catch (error) {
       console.error('Error creating exam:', error);

@@ -4,6 +4,7 @@ import {
   Routes,
   Navigate,
   useLocation,
+  useParams,
 } from "react-router-dom";
 import Sidebar from "./components/sidebar";
 import Content from "./components/body-content";
@@ -32,6 +33,11 @@ const ScrollToTop = () => {
     window.scrollTo(0, 0);
   }, [pathname]);
   return null;
+};
+
+const ExamLegacyRedirect = () => {
+  const { id } = useParams();
+  return <Navigate to={`/exam/${id}`} replace />;
 };
 
 function App() {
@@ -133,10 +139,10 @@ function App() {
           }
         />
         <Route
-          path="/exam/results/:id"
+          path="/exam/g/:id"
           element={
             <ProtectedRoute updateAuthState={updateAuthState}>
-              <ExamResults onTaskCompletion={handleTaskCompletion} />
+              <ExamLegacyRedirect />
             </ProtectedRoute>
           }
         />

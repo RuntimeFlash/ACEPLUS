@@ -183,13 +183,17 @@ const Exam = () => {
     setNotification("");
 
     try {
-      const examData = await api.createExam({
+      const examResponse = await api.createExam({
         userId: localStorage.getItem("user_id"),
         subject: subject,
         lessons: lessons.map((l) => l.value),
       });
 
-      navigate(`/exam/g/${examData["exam-id"]}`);
+      const examId = examResponse["exam-id"];
+      const createdExam = examResponse.exam;
+      navigate(`/exam/${examId}`, {
+        state: createdExam ? { examData: createdExam } : undefined,
+      });
     } catch (error) {
       setNotification("Failed to create an exam. Please try again.");
       setShowErrorPopup(true);

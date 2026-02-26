@@ -403,7 +403,17 @@ def create_exam():
     try:
         added_exam = exam_repo.add_exam(exam_data, is_class10)
         if added_exam:
-            return jsonify({"exam-id": exam_id}), 201
+            created_exam = exam_repo.get_exam(exam_id, is_class10)
+            if not created_exam:
+                return jsonify({"exam-id": exam_id}), 201
+
+            response_data = copy.deepcopy(created_exam)
+            if not response_data.get("is_submitted", False):
+                for question in response_data.get("questions", []):
+                    question.pop("answer", None)
+            response_data = decode_unicode(response_data)
+            response_data = convert_objectid_to_str(response_data)
+            return jsonify({"exam-id": exam_id, "exam": response_data}), 201
         else:
             return jsonify({"message": "Error creating exam"}), 500
     except Exception as e:
