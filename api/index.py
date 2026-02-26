@@ -17,12 +17,13 @@ def _resolve_backend_dir() -> str:
 
 
 BACKEND_DIR = _resolve_backend_dir()
+REPO_DIR = os.path.normpath(os.path.join(BACKEND_DIR, os.pardir))
 
 if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
 # Force serverless-safe behavior in backend runtime.
 os.environ.setdefault("SERVERLESS", "1")
-os.environ.setdefault("BACKEND_DATA_DIR", os.path.join(BACKEND_DIR, "data"))
+os.environ.setdefault("BACKEND_DATA_DIR", os.path.join(REPO_DIR, "Legacy Json Qs"))
 
 from main import app  # noqa: E402

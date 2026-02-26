@@ -1,10 +1,13 @@
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT / "data"
+DATA_DIR = Path(
+    os.getenv("BACKEND_DATA_DIR", str(ROOT.parent / "Legacy Json Qs"))
+).resolve()
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -55,7 +58,7 @@ def main() -> None:
 
     files = sorted(DATA_DIR.rglob("*.json"))
     if not files:
-        print("No JSON files found under backend/data.")
+        print(f"No JSON files found under {DATA_DIR}.")
         return
 
     migrated = 0
