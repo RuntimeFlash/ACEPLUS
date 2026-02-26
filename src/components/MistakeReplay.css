@@ -130,19 +130,103 @@
 }
 
 .replay-empty {
-  border-radius: 10px;
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 28px 22px;
   color: #d5d5d5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background:
+    radial-gradient(circle at top right, rgba(46, 125, 255, 0.2), transparent 45%),
+    linear-gradient(180deg, #161616 0%, #121212 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .replay-empty p {
   margin: 0;
 }
 
-.replay-next-due {
-  margin-top: 8px !important;
+.replay-empty h3 {
+  margin: 10px 0 8px;
+  color: #ffffff;
+  font-size: 1.2rem;
+}
+
+.replay-empty-text {
+  max-width: 520px;
+  color: #b9bcc3;
+  line-height: 1.5;
+}
+
+.replay-empty-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(76, 175, 80, 0.14);
+  border: 1px solid rgba(76, 175, 80, 0.34);
+}
+
+.replay-empty-icon {
+  font-size: 2rem;
+  color: #7ed487;
+}
+
+.replay-next-due-card {
+  margin-top: 14px;
+  width: 100%;
+  max-width: 460px;
+  border-radius: 12px;
+  border: 1px solid rgba(74, 144, 226, 0.35);
+  background: rgba(74, 144, 226, 0.12);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.replay-next-due-card svg {
   color: #9ec8ff;
+  font-size: 1.35rem;
+}
+
+.replay-next-due-card span {
+  display: block;
+  font-size: 0.85rem;
+  color: #9ab3d8;
+}
+
+.replay-next-due-card strong {
+  display: block;
+  margin-top: 2px;
+  color: #f2f6ff;
+}
+
+.replay-next-due {
+  margin-top: 12px !important;
+  color: #9ec8ff;
+}
+
+.replay-empty-refresh-btn {
+  margin-top: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #222;
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.replay-empty-refresh-btn:hover {
+  background: #2a2a2a;
 }
 
 @media (max-width: 768px) {

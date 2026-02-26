@@ -39,6 +39,7 @@ body {
 .btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   margin-bottom: 10px;
   background-color: transparent;
   border: none;
@@ -49,6 +50,11 @@ body {
   color: white;
   transition: all 0.3s;
   font-size: 17px;
+}
+
+.btn svg {
+  font-size: 1.35rem;
+  min-width: 24px;
 }
 
 .btn span {
@@ -73,8 +79,10 @@ body {
 .sidebar:hover .btn {
   padding-bottom: 15px;
   padding-top: 15px;
+  padding-left: 16px;
   width: 90%;
   align-items: center;
+  justify-content: flex-start;
 }
 
 .sidebar:hover .btn span {

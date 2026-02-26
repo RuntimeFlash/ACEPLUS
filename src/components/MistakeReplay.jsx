@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { RiCalendarScheduleLine, RiCheckboxCircleLine, RiRefreshLine } from 'react-icons/ri';
 import { api } from '../utils/api';
 import './MistakeReplay.css';
 
@@ -111,12 +112,28 @@ function MistakeReplay() {
 
         {!currentCard ? (
           <div className="replay-empty">
-            <p>No cards are due right now.</p>
-            {nextDueAt && (
-              <p className="replay-next-due">
-                Next card due at: {formatDateTime(nextDueAt) || nextDueAt}
-              </p>
+            <div className="replay-empty-icon-wrap">
+              <RiCheckboxCircleLine className="replay-empty-icon" />
+            </div>
+            <h3>All due cards completed</h3>
+            <p className="replay-empty-text">
+              You are caught up for now. Keep solving exams and this queue will auto-fill with weak spots.
+            </p>
+            {nextDueAt ? (
+              <div className="replay-next-due-card">
+                <RiCalendarScheduleLine />
+                <div>
+                  <span>Next review unlocks</span>
+                  <strong>{formatDateTime(nextDueAt) || nextDueAt}</strong>
+                </div>
+              </div>
+            ) : (
+              <p className="replay-next-due">No next card scheduled yet.</p>
             )}
+            <button type="button" className="replay-empty-refresh-btn" onClick={loadQueue}>
+              <RiRefreshLine />
+              Check again
+            </button>
           </div>
         ) : (
           <>
