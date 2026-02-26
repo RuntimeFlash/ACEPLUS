@@ -124,7 +124,9 @@ export const endpoints = {
   getUploadedImage: (filename) => `api/uploads/${filename}`,
   fetchCoins: 'api/fetch_coins',
   getStudentsByStandard: (isClass10) => `api/students_by_standard?class10=${isClass10}`,
-  generateFromFiles: 'api/generate_from_files'
+  generateFromFiles: 'api/generate_from_files',
+  mistakeReplay: (limit = 20) => `api/mistake_replay?limit=${limit}`,
+  reviewMistakeReplay: 'api/mistake_replay/review'
 };
 
 // API methods for common operations
@@ -592,5 +594,13 @@ export const api = {
   getUnsubmittedExams: () => apiRequest('api/unsubmitted_exams'),
   deleteUnsubmittedExam: (examId) => apiRequest(`api/delete_unsubmitted_exam/${examId}`, {
     method: 'DELETE'
+  }),
+  getMistakeReplay: (limit = 20) => apiRequest(endpoints.mistakeReplay(limit)),
+  reviewMistakeReplay: (replayId, selectedOption) => apiRequest(endpoints.reviewMistakeReplay, {
+    method: 'POST',
+    body: JSON.stringify({
+      replay_id: replayId,
+      selected_option: selectedOption
+    })
   })
 }

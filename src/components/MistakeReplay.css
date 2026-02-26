@@ -1,0 +1,241 @@
+.replay-page {
+  min-height: 100vh;
+  margin-left: 70px;
+  padding: 84px 20px 24px;
+}
+
+.sidebar:hover ~ .replay-page {
+  margin-left: 220px;
+}
+
+.replay-panel {
+  max-width: 920px;
+  margin: 0 auto;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.replay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.replay-header h2 {
+  margin: 0;
+  color: #fff;
+}
+
+.replay-refresh-btn {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: #232323;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.replay-feedback {
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.replay-feedback.correct {
+  background: rgba(46, 125, 50, 0.25);
+  border: 1px solid rgba(46, 125, 50, 0.5);
+}
+
+.replay-feedback.wrong {
+  background: rgba(183, 28, 28, 0.24);
+  border: 1px solid rgba(183, 28, 28, 0.5);
+}
+
+.replay-error {
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  background: rgba(244, 67, 54, 0.2);
+  border: 1px solid rgba(244, 67, 54, 0.4);
+}
+
+.replay-meta {
+  margin: 0 0 12px;
+  color: #c6c6c6;
+  font-size: 0.95rem;
+}
+
+.replay-question-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px;
+  background: #141414;
+}
+
+.replay-question-card h3 {
+  margin: 0 0 12px;
+  line-height: 1.5;
+  color: #f5f5f5;
+  font-size: 1.05rem;
+}
+
+.replay-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.replay-option-btn {
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #1f1f1f;
+  color: #ececec;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.replay-option-btn.selected {
+  border-color: #4a90e2;
+  background: rgba(74, 144, 226, 0.2);
+}
+
+.opt-key {
+  display: inline-block;
+  width: 24px;
+  font-weight: 700;
+}
+
+.replay-actions {
+  margin-top: 14px;
+}
+
+.replay-submit-btn {
+  border: none;
+  background: #2e7dff;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.replay-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.replay-empty {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 28px 22px;
+  color: #d5d5d5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background:
+    radial-gradient(circle at top right, rgba(46, 125, 255, 0.2), transparent 45%),
+    linear-gradient(180deg, #161616 0%, #121212 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.replay-empty p {
+  margin: 0;
+}
+
+.replay-empty h3 {
+  margin: 10px 0 8px;
+  color: #ffffff;
+  font-size: 1.2rem;
+}
+
+.replay-empty-text {
+  max-width: 520px;
+  color: #b9bcc3;
+  line-height: 1.5;
+}
+
+.replay-empty-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(76, 175, 80, 0.14);
+  border: 1px solid rgba(76, 175, 80, 0.34);
+}
+
+.replay-empty-icon {
+  font-size: 2rem;
+  color: #7ed487;
+}
+
+.replay-next-due-card {
+  margin-top: 14px;
+  width: 100%;
+  max-width: 460px;
+  border-radius: 12px;
+  border: 1px solid rgba(74, 144, 226, 0.35);
+  background: rgba(74, 144, 226, 0.12);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.replay-next-due-card svg {
+  color: #9ec8ff;
+  font-size: 1.35rem;
+}
+
+.replay-next-due-card span {
+  display: block;
+  font-size: 0.85rem;
+  color: #9ab3d8;
+}
+
+.replay-next-due-card strong {
+  display: block;
+  margin-top: 2px;
+  color: #f2f6ff;
+}
+
+.replay-next-due {
+  margin-top: 12px !important;
+  color: #9ec8ff;
+}
+
+.replay-empty-refresh-btn {
+  margin-top: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #222;
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.replay-empty-refresh-btn:hover {
+  background: #2a2a2a;
+}
+
+@media (max-width: 768px) {
+  .replay-page {
+    margin-left: 0;
+    padding: 78px 12px 90px;
+  }
+
+  .replay-options {
+    grid-template-columns: 1fr;
+  }
+}

@@ -23,6 +23,7 @@ import TestSeries from "./components/TestSeries";
 import Header from "./components/Header";
 import CreateTest from "./components/CreateTest";
 import LandingPage from "./components/LandingPage";
+import MistakeReplay from "./components/MistakeReplay";
 
 import "./App.css";
 
@@ -122,15 +123,15 @@ function App() {
           }
         />
         <Route
-          path="/exam/results/:id"
+          path="/replay"
           element={
             <ProtectedRoute updateAuthState={updateAuthState}>
-              <ExamResults onTaskCompletion={handleTaskCompletion} />
+              <MistakeReplay />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/exam/:id"
+          path="/exam/g/:id"
           element={
             <ProtectedRoute updateAuthState={updateAuthState}>
               <ExamTaking />
