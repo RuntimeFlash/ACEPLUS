@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from v2.services.static_data import static_data_service
+from services.static_data import static_data_service
 
 
 router = APIRouter(tags=["public"])

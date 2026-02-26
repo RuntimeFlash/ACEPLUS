@@ -39,8 +39,7 @@
     "dev": "vite --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "start-backend": "cd backend && python main.py",
-    "start-backend-v2": "cd backend && uvicorn v2.main:app --host 0.0.0.0 --port 9027",
+    "start-backend": "cd backend && uvicorn main:app --host 0.0.0.0 --port 9027",
     "migrate-json-mongo": "cd backend && python scripts/migrate_json_to_mongo.py",
     "setup": "cd backend && python setup.py"
   },

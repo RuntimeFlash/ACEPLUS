@@ -13,7 +13,7 @@ from db import (
 )
 from utils.data_utils import calculate_lesson_analytics, decode_unicode
 from utils.name_utils import generate_memorable_name
-from v2.services.replay_service import replay_service
+from services.replay_service import replay_service
 
 
 class ExamService:

@@ -1,8 +1,8 @@
 from typing import Any, Dict
 
 from db import user_repo
-from v2.core.auth import create_legacy_access_token
-from v2.services.static_data import static_data_service
+from core.auth import create_legacy_access_token
+from services.static_data import static_data_service
 
 
 class AuthService:

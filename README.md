@@ -117,7 +117,7 @@ To install and set up AcePlus, follow these steps:
     npm run start-backend
     ```
 
-    This will start the Flask development server, typically on port 9027.
+    This will start the FastAPI backend (uvicorn), typically on port 9027.
 
 2. **Start the frontend development server:**
 
@@ -319,4 +319,3 @@ Contributions to AcePlus are welcome! If you'd like to contribute, please follow
 3. **Make your changes** and commit them with clear, descriptive commit messages.
 4. **Push your branch** to your forked repository: `git push origin your-branch-name`.
 5. **Open a pull request** to the `main` branch of the original repository.
-
