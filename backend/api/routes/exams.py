@@ -3,7 +3,9 @@ from typing import Any, Dict, List
 from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import JSONResponse
 
+from db import leaderboard_service, user_repo
 from core.auth import CurrentUser, get_current_user
+from services.auth_service import auth_service
 from services.exam_service import exam_service
 from services.replay_service import replay_service
 
@@ -88,6 +90,100 @@ def get_user_exams(
         is_class10=current_user.is_class10,
     )
     return JSONResponse(content=data, status_code=200)
+
+
+@router.get("/user_stats")
+def get_user_stats(
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    user = user_repo.get_user(current_user.user_id, current_user.is_class10)
+    if not user:
+        return JSONResponse(content={"message": "User not found"}, status_code=404)
+
+    stats = user.get("stats", {}) or {}
+    attempted = int(stats.get("attempted", 0) or 0)
+    total_questions = int(stats.get("questions", 0) or 0)
+    marks_gained = int(stats.get("correct", 0) or 0)
+    avg_percentage = float(stats.get("avgPercentage", 0.0) or 0.0)
+
+    payload = {
+        "stats": [
+            {"total_exams": attempted},
+            {"total_marks": total_questions},
+            {"marks_gained": marks_gained},
+            {"average_percentage": f"{avg_percentage:.2f}%"},
+        ],
+        "version": auth_service.version,
+    }
+    return JSONResponse(content=payload, status_code=200)
+
+
+@router.get("/fetch_coins")
+def fetch_coins(
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    user = user_repo.get_user(current_user.user_id, current_user.is_class10)
+    if not user:
+        return JSONResponse(content={"message": "User not found"}, status_code=404)
+
+    tasks = (user.get("tasks", {}) or {}).get("tasks_list", []) or []
+    return JSONResponse(
+        content={
+            "coins": int(user.get("coins", 0) or 0),
+            "tasks": tasks,
+        },
+        status_code=200,
+    )
+
+
+@router.get("/leaderboard")
+def get_leaderboard(
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    user = user_repo.get_user(current_user.user_id, current_user.is_class10)
+    if not user:
+        return JSONResponse(content={"message": "User not found"}, status_code=404)
+
+    standard = 10 if current_user.is_class10 else 9
+    division = str(user.get("division", "") or "").strip()
+
+    monthly = leaderboard_service.get_or_build_monthly(
+        standard=standard,
+        page=1,
+        page_size=10000,
+    )
+    entries = monthly.get("entries", []) or []
+    if division:
+        entries = [entry for entry in entries if str(entry.get("division", "")).strip() == division]
+
+    ranked = []
+    for idx, entry in enumerate(entries, 1):
+        item = dict(entry)
+        item["rank"] = idx
+        ranked.append(item)
+
+    total_count = len(ranked)
+    start = max(0, (page - 1) * page_size)
+    end = min(total_count, start + page_size)
+    paged_entries = ranked[start:end]
+    total_pages = max(1, (total_count + page_size - 1) // page_size)
+
+    payload = {
+        "leaderboard_id": f"{monthly.get('month')}-{standard}-{monthly.get('version')}",
+        "month": monthly.get("month"),
+        "class": str(standard),
+        "division": division,
+        "leaderboard": paged_entries,
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+            "total_count": total_count,
+        },
+    }
+    return JSONResponse(content=payload, status_code=200)
 
 
 @router.get("/unsubmitted_exams")
