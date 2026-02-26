@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from bson import ObjectId
 from gridfs import GridFSBucket
 from pymongo import ASCENDING, DESCENDING
 from pymongo.collection import Collection
 
 from .base import DatabaseClient
+from utils.mongo_utils import parse_object_id
 
 class UploadRepository:
     """Stores user uploads in Mongo GridFS to avoid local-disk dependency."""
@@ -21,13 +21,6 @@ class UploadRepository:
             files_col = db_client.get_collection("uploads.files", standard=std)
             files_col.create_index([("metadata.user_id", ASCENDING), ("uploadDate", DESCENDING)])
             files_col.create_index([("metadata.parent_file_id", ASCENDING)])
-
-    @staticmethod
-    def _parse_object_id(file_id: str) -> Optional[ObjectId]:
-        try:
-            return ObjectId(file_id)
-        except Exception:
-            return None
 
     def _bucket(self, is_class10: bool) -> GridFSBucket:
         return self._bucket10 if is_class10 else self._bucket9
@@ -57,7 +50,7 @@ class UploadRepository:
             return str(stream._id)
 
     def get_file(self, file_id: str, is_class10: bool) -> Optional[Dict[str, Any]]:
-        oid = self._parse_object_id(file_id)
+        oid = parse_object_id(file_id)
         if oid is None:
             return None
         file_doc = self._files_col(is_class10).find_one({"_id": oid})
@@ -82,7 +75,7 @@ class UploadRepository:
         }
 
     def delete_file(self, file_id: str, is_class10: bool, delete_children: bool = True) -> bool:
-        oid = self._parse_object_id(file_id)
+        oid = parse_object_id(file_id)
         if oid is None:
             return False
         files_col = self._files_col(is_class10)
@@ -99,25 +92,15 @@ class UploadRepository:
         self._bucket(is_class10).delete(oid)
         return True
 
-    def enforce_user_bytes_cap(
+    def list_user_file_sizes_since(
         self,
         user_id: str,
         is_class10: bool,
-        bytes_limit: int,
-        window_hours: int = 24,
-    ) -> None:
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=window_hours)
-        files_col = self._files_col(is_class10)
-        docs = list(
-            files_col.find(
-                {"metadata.user_id": user_id, "uploadDate": {"$gte": cutoff}},
-                {"_id": 1, "length": 1},
-            ).sort("uploadDate", ASCENDING)
+        cutoff: datetime,
+    ) -> List[Dict[str, Any]]:
+        return list(
+            self._files_col(is_class10)
+            .find({"metadata.user_id": user_id, "uploadDate": {"$gte": cutoff}}, {"_id": 1, "length": 1})
+            .sort("uploadDate", ASCENDING)
         )
-        total_bytes = sum(int(doc.get("length", 0)) for doc in docs)
-        while total_bytes > bytes_limit and docs:
-            oldest = docs.pop(0)
-            removed = self.delete_file(str(oldest.get("_id")), is_class10, delete_children=False)
-            if removed:
-                total_bytes -= int(oldest.get("length", 0))
 

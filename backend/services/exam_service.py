@@ -9,6 +9,7 @@ from db import (
     exam_repo,
     leaderboard_service,
     test_repo,
+    user_stats_service,
     user_repo,
 )
 from utils.data_utils import calculate_lesson_analytics, decode_unicode
@@ -213,7 +214,7 @@ class ExamService:
             pass
 
         try:
-            user_repo.update_stats_after_exam(
+            user_stats_service.update_stats_after_exam(
                 user_id,
                 exam["subject"],
                 score,

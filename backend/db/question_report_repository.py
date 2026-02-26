@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from pymongo import ASCENDING
+from pymongo import ASCENDING, DESCENDING
 from pymongo.collection import Collection
 
 from .base import DatabaseClient
@@ -34,9 +34,3 @@ class QuestionReportRepository:
             upsert=True,
         )
         return result.upserted_id is not None
-
-
-# -----------------------------------------------------------------------------
-# Static Content Repository (JSON content migrated to Mongo)
-# -----------------------------------------------------------------------------
-

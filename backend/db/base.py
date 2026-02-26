@@ -1,50 +1,15 @@
 import os
-import threading
 import queue
-from dataclasses import dataclass
-from datetime import date, datetime, timedelta, timezone
-from pytz import timezone as pytz_timezone
-from typing import Any, Dict, List, Optional, Tuple
-from pymongo import MongoClient, ASCENDING, DESCENDING
+import threading
+from typing import Dict, List, Optional, Tuple
+
+from pymongo import MongoClient
 from pymongo.collection import Collection
-from bson import ObjectId
-from gridfs import GridFSBucket
-import hashlib
 from dotenv import load_dotenv
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 backend_dir = os.path.normpath(os.path.join(current_dir, ".."))
 load_dotenv(dotenv_path=os.path.join(backend_dir, ".env"))
-
-# -----------------------------------------------------------------------------
-# Helpers
-# -----------------------------------------------------------------------------
-
-IST = pytz_timezone("Asia/Kolkata")
-
-def convert_objectid_to_str(obj):
-    if isinstance(obj, ObjectId):
-        return str(obj)
-    elif isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-    elif isinstance(obj, dict):
-        return {key: convert_objectid_to_str(value) for key, value in obj.items()}
-    elif isinstance(obj, list):
-        return [convert_objectid_to_str(item) for item in obj]
-    else:
-        return obj
-
-def month_key_from_date_str(date_str: str) -> str:
-    # date is in 'dd-mm-YYYY'
-    try:
-        dt = datetime.strptime(date_str, "%d-%m-%Y")
-    except Exception:
-        # If format unexpected, fallback to current month
-        dt = datetime.now(IST)
-    return dt.strftime("%Y-%m")
-
-def current_month_key() -> str:
-    return datetime.now(IST).strftime("%Y-%m")
 
 # -----------------------------------------------------------------------------
 # Database Client and WriteQueue
