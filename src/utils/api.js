@@ -126,7 +126,24 @@ export const endpoints = {
   getStudentsByStandard: (isClass10) => `api/students_by_standard?class10=${isClass10}`,
   generateFromFiles: 'api/generate_from_files',
   mistakeReplay: (limit = 20) => `api/mistake_replay?limit=${limit}`,
-  reviewMistakeReplay: 'api/mistake_replay/review'
+  reviewMistakeReplay: 'api/mistake_replay/review',
+  profileMe: 'api/profile/me',
+  profileById: (userId) => `api/profile/${userId}`,
+  profileStatus: 'api/profile/status',
+  profileShowcase: 'api/profile/showcase',
+  friendsSearch: 'api/friends/search',
+  friendRequest: 'api/friends/request',
+  friendRequests: 'api/friends/requests',
+  friendRespond: 'api/friends/respond',
+  friendsList: 'api/friends/list',
+  removeFriend: (friendId) => `api/friends/${friendId}`,
+  friendLeaderboard: 'api/friends/leaderboard',
+  friendChallenges: 'api/friends/challenges',
+  friendSquads: 'api/friends/squads',
+  updateSquadGoal: (squadId) => `api/friends/squads/${squadId}/goal`,
+  sendNudge: 'api/friends/nudge',
+  friendNudges: 'api/friends/nudges',
+  markNudgeRead: (nudgeId) => `api/friends/nudges/${nudgeId}/read`
 };
 
 // API methods for common operations
@@ -602,5 +619,56 @@ export const api = {
       replay_id: replayId,
       selected_option: selectedOption
     })
+  }),
+  getMyProfile: () => apiRequest(endpoints.profileMe),
+  getProfileById: (userId) => apiRequest(endpoints.profileById(userId)),
+  updateMyProfile: (data) => apiRequest(endpoints.profileMe, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+  updateProfileStatus: (status) => apiRequest(endpoints.profileStatus, {
+    method: 'POST',
+    body: JSON.stringify({ status })
+  }),
+  updateProfileShowcase: (badgeIds) => apiRequest(endpoints.profileShowcase, {
+    method: 'POST',
+    body: JSON.stringify({ badge_ids: badgeIds })
+  }),
+  searchFriends: (query = '', limit = 20) => apiRequest(`${endpoints.friendsSearch}?q=${encodeURIComponent(query)}&limit=${limit}`),
+  sendFriendRequest: (identifier) => apiRequest(endpoints.friendRequest, {
+    method: 'POST',
+    body: JSON.stringify({ identifier })
+  }),
+  getFriendRequests: () => apiRequest(endpoints.friendRequests),
+  respondFriendRequest: (requestId, action) => apiRequest(endpoints.friendRespond, {
+    method: 'POST',
+    body: JSON.stringify({ request_id: requestId, action })
+  }),
+  getFriends: () => apiRequest(endpoints.friendsList),
+  removeFriend: (friendId) => apiRequest(endpoints.removeFriend(friendId), {
+    method: 'DELETE'
+  }),
+  getFriendLeaderboard: (metric = 'xp') => apiRequest(`${endpoints.friendLeaderboard}?metric=${encodeURIComponent(metric)}`),
+  createChallenge: (data) => apiRequest(endpoints.friendChallenges, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+  getChallenges: () => apiRequest(endpoints.friendChallenges),
+  createSquad: (data) => apiRequest(endpoints.friendSquads, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+  getSquads: () => apiRequest(endpoints.friendSquads),
+  updateSquadGoal: (squadId, goal) => apiRequest(endpoints.updateSquadGoal(squadId), {
+    method: 'PUT',
+    body: JSON.stringify({ goal })
+  }),
+  sendNudge: (friendId, type = 'study', message = '') => apiRequest(endpoints.sendNudge, {
+    method: 'POST',
+    body: JSON.stringify({ friend_id: friendId, type, message })
+  }),
+  getNudges: (unreadOnly = false) => apiRequest(`${endpoints.friendNudges}?unread_only=${unreadOnly}`),
+  markNudgeRead: (nudgeId) => apiRequest(endpoints.markNudgeRead(nudgeId), {
+    method: 'POST'
   })
 }

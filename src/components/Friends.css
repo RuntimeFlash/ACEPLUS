@@ -1,0 +1,202 @@
+.friends-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  margin-left: 80px;
+  max-width: calc(100% - 80px);
+}
+
+.sidebar:hover ~ .friends-container {
+  margin-left: 220px;
+  max-width: calc(100% - 220px);
+}
+
+.friends-title {
+  margin: 0 0 1rem;
+  font-size: 2.2rem;
+}
+
+.friends-card {
+  background: #202020;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.friends-card h3 {
+  margin-top: 0;
+}
+
+.friends-muted {
+  color: #b7c0ca;
+}
+
+.friends-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.friends-input-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.friends-input-row input,
+.friends-form-grid input,
+.friends-form-grid select {
+  background: #2c2c2c;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+}
+
+.friends-card button {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #2a2a2a;
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.45rem 0.65rem;
+  cursor: pointer;
+}
+
+.friends-card button:hover {
+  background: #353535;
+}
+
+.friends-card button.danger {
+  border-color: rgba(255, 80, 80, 0.5);
+  color: #ff7b7b;
+}
+
+.friend-code-row {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.friend-code-row code {
+  background: #2c2c2c;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.search-results,
+.list-stack {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.result-row,
+.request-row,
+.friend-row,
+.nudge-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.7rem;
+  background: #2a2a2a;
+  border-radius: 10px;
+  padding: 0.6rem;
+}
+
+.result-row p,
+.friend-row p {
+  margin: 0.2rem 0 0;
+  color: #c1cad2;
+}
+
+.request-row > div,
+.friend-row > div:last-child {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.metric-switch {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.7rem;
+}
+
+.metric-switch button.active {
+  border-color: #3da2ff;
+  color: #3da2ff;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 0.55rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.friends-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-bottom: 0.7rem;
+}
+
+.member-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.8rem;
+  margin-bottom: 0.7rem;
+}
+
+.member-selector label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.mini-card {
+  background: #2a2a2a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+  padding: 0.55rem;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.nudge-row.read {
+  opacity: 0.8;
+}
+
+.nudges-card {
+  margin-bottom: 70px;
+}
+
+@media (max-width: 768px) {
+  .friends-container,
+  .sidebar:hover ~ .friends-container {
+    margin-left: 0;
+    max-width: 100%;
+    padding: 1rem;
+    margin-bottom: 70px;
+  }
+
+  .friends-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .friends-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .friends-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

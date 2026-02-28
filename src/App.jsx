@@ -24,6 +24,8 @@ import Header from "./components/Header";
 import CreateTest from "./components/CreateTest";
 import LandingPage from "./components/LandingPage";
 import MistakeReplay from "./components/MistakeReplay";
+import Profile from "./components/Profile";
+import Friends from "./components/Friends";
 
 import "./App.css";
 
@@ -127,6 +129,22 @@ function App() {
           element={
             <ProtectedRoute updateAuthState={updateAuthState}>
               <MistakeReplay />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute updateAuthState={updateAuthState}>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/friends"
+          element={
+            <ProtectedRoute updateAuthState={updateAuthState}>
+              <Friends />
             </ProtectedRoute>
           }
         />

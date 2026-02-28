@@ -24,6 +24,37 @@
   gap: 10px;
 }
 
+.header-actions {
+  position: absolute;
+  right: 110px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.header-action-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.header-action-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.header-action-btn.active {
+  border-color: rgba(0, 123, 255, 0.8);
+  color: #4ea0ff;
+}
+
 .header-logo {
   width: 40px;
   height: 40px;
@@ -132,6 +163,15 @@
     width: 60px;
     height: 32px;
     right: 10px;
+  }
+  .header-actions {
+    right: 80px;
+    gap: 6px;
+  }
+  .header-action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
   }
   .skeleton-coin {
     width: 60px;

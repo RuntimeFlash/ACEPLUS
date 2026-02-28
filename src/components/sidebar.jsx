@@ -1,6 +1,15 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { RiDashboardLine, RiFileAddLine, RiFileTextLine, RiBarChartLine, RiHistoryLine, RiLoopLeftLine } from 'react-icons/ri';
+import {
+  RiDashboardLine,
+  RiFileAddLine,
+  RiFileTextLine,
+  RiBarChartLine,
+  RiHistoryLine,
+  RiLoopLeftLine,
+  RiUser3Line,
+  RiUserSharedLine
+} from 'react-icons/ri';
 
 function Sidebar({ isHeaderHidden }) {
   const navigate = useNavigate();
@@ -33,6 +42,14 @@ function Sidebar({ isHeaderHidden }) {
       <button onClick={() => navigate('/replay')} className={`btn ${location.pathname === '/replay' ? 'active' : ''}`}>
         <RiLoopLeftLine />
         <span>Replay</span>
+      </button>
+      <button onClick={() => navigate('/profile')} className={`btn ${location.pathname === '/profile' ? 'active' : ''}`}>
+        <RiUser3Line />
+        <span>Profile</span>
+      </button>
+      <button onClick={() => navigate('/friends')} className={`btn ${location.pathname === '/friends' ? 'active' : ''}`}>
+        <RiUserSharedLine />
+        <span>Friends</span>
       </button>
     </div>
   );

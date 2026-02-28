@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { FaCoins } from 'react-icons/fa';
+import { RiUser3Line, RiUserSharedLine } from 'react-icons/ri';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../utils/api';
 import logo from './logo512.png';
 import './Header.css';
 import Coins from './Coins';
 
 const Header = ({ completedTasks }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [coins, setCoins] = useState(0);
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,6 +59,24 @@ const Header = ({ completedTasks }) => {
           <img src={logo} alt="AcePlus Logo" className="header-logo" />
           <h1 className="header-text">AcePlus</h1>
         </div>
+        {isAuthenticated && (
+          <div className="header-actions">
+            <button
+              className={`header-action-btn ${location.pathname === '/profile' ? 'active' : ''}`}
+              onClick={() => navigate('/profile')}
+              aria-label="Open profile"
+            >
+              <RiUser3Line />
+            </button>
+            <button
+              className={`header-action-btn ${location.pathname === '/friends' ? 'active' : ''}`}
+              onClick={() => navigate('/friends')}
+              aria-label="Open friends"
+            >
+              <RiUserSharedLine />
+            </button>
+          </div>
+        )}
         {isAuthenticated && (
           <div className={`header-right ${isLoading ? 'is-loading' : 'is-loaded'}`} onClick={handleCoinsClick} style={{ cursor: 'pointer' }}>
             <div className="skeleton skeleton-coin"></div>
