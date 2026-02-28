@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Tuple
 
+from utils.social_utils import build_default_profile
 from utils.date_utils import current_ist_date_str
 
 
@@ -29,7 +30,7 @@ def build_user_doc(
     standard: int,
     teacher: bool = False,
 ) -> Dict[str, Any]:
-    return {
+    user_doc = {
         "id": user_id,
         "name": name,
         "password": password,
@@ -42,7 +43,10 @@ def build_user_doc(
         "stats": {"attempted": 0, "correct": 0, "questions": 0, "avgPercentage": 0.0},
         "subjects": [default_subject_stats(subj) for subj in _DEFAULT_SUBJECTS],
         "examHistory": [],
+        "friends": [],
     }
+    user_doc["profile"] = build_default_profile(user_doc)
+    return user_doc
 
 
 def compute_exam_stats_update(

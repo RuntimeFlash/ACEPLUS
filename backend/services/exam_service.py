@@ -15,6 +15,7 @@ from db import (
 from utils.data_utils import calculate_lesson_analytics, decode_unicode
 from utils.name_utils import generate_memorable_name
 from services.replay_service import replay_service
+from services.social_service import social_service
 
 
 class ExamService:
@@ -231,6 +232,19 @@ class ExamService:
             )
             standard = 10 if is_class10 else 9
             leaderboard_service.update_on_submission(user_id, standard)
+        except Exception:
+            pass
+
+        try:
+            social_service.update_progress_after_exam(
+                user_id=user_id,
+                subject=str(exam.get("subject", "")),
+                exam_id=exam_id,
+                score=score,
+                total_questions=total_questions,
+                percentage=float(percentage),
+                is_test=bool(exam.get("test", False)),
+            )
         except Exception:
             pass
 
