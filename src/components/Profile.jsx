@@ -4,6 +4,12 @@ import Notification from './Notification';
 import './Profile.css';
 
 const STATUS_OPTIONS = ['online', 'studying', 'challenge', 'offline'];
+const STATUS_LABELS = {
+  online: 'Online',
+  studying: 'Studying',
+  challenge: 'In Challenge',
+  offline: 'Offline'
+};
 
 function Profile() {
   const [profile, setProfile] = useState(null);
@@ -58,7 +64,7 @@ function Profile() {
 
   const xpPercent = useMemo(() => {
     const xp = profile?.progress?.xp || 0;
-    return xp % 100;
+    return ((xp % 100) + 100) % 100;
   }, [profile]);
 
   const handleFieldChange = (key, value) => {
@@ -114,13 +120,27 @@ function Profile() {
   };
 
   if (loading) {
-    return <div className="profile-container"><h2 className="profile-title">Loading profile...</h2></div>;
+    return (
+      <div className="profile-container">
+        <section className="profile-card">
+          <h2 className="profile-title">Loading profile...</h2>
+        </section>
+      </div>
+    );
   }
 
   return (
     <div className="profile-container">
       <Notification message={notification.message} type={notification.type} />
-      <h1 className="profile-title">Profile</h1>
+      <header className="profile-heading">
+        <div>
+          <h1 className="profile-title">Profile</h1>
+          <p className="profile-subtitle">Manage identity, privacy, and social progress.</p>
+        </div>
+        <span className={`profile-status-chip status-${profile?.status || 'offline'}`}>
+          {STATUS_LABELS[profile?.status] || STATUS_LABELS.offline}
+        </span>
+      </header>
 
       <div className="profile-banner" style={{ backgroundImage: `url(${form.banner_url || ''})` }}>
         <div className="profile-overlay">
@@ -129,52 +149,89 @@ function Profile() {
             alt="avatar"
             className="profile-avatar"
           />
-          <div>
+          <div className="profile-identity">
             <h2>{profile?.display_name || profile?.name}</h2>
             <p>@{profile?.username}</p>
+            {form.title && <span className="profile-role-pill">{form.title}</span>}
           </div>
         </div>
       </div>
 
       <div className="profile-grid">
         <section className="profile-card">
-          <h3>Identity</h3>
-          <div className="profile-form-grid">
-            <input value={form.username} onChange={(e) => handleFieldChange('username', e.target.value)} placeholder="username" />
-            <input value={form.display_name} onChange={(e) => handleFieldChange('display_name', e.target.value)} placeholder="display name" />
-            <input value={form.title} onChange={(e) => handleFieldChange('title', e.target.value)} placeholder="title" />
-            <input value={form.country} onChange={(e) => handleFieldChange('country', e.target.value)} placeholder="country" />
-            <input value={form.timezone} onChange={(e) => handleFieldChange('timezone', e.target.value)} placeholder="timezone" />
-            <select value={form.privacy?.activity || 'friends'} onChange={(e) => handlePrivacyChange(e.target.value)}>
-              <option value="public">Public activity</option>
-              <option value="friends">Friends-only activity</option>
-              <option value="private">Private activity</option>
-            </select>
-            <input value={form.avatar_url} onChange={(e) => handleFieldChange('avatar_url', e.target.value)} placeholder="avatar URL" />
-            <input value={form.banner_url} onChange={(e) => handleFieldChange('banner_url', e.target.value)} placeholder="banner URL" />
+          <div className="card-head">
+            <h3>Identity</h3>
+            <p>Public details and account visibility.</p>
           </div>
-          <textarea value={form.bio} onChange={(e) => handleFieldChange('bio', e.target.value)} placeholder="bio" rows={4} />
-          <button className="profile-save-btn" onClick={handleSaveProfile} disabled={saving}>
-            {saving ? 'Saving...' : 'Save profile'}
-          </button>
+          <div className="profile-form-grid">
+            <label>
+              <span>Username</span>
+              <input value={form.username} onChange={(e) => handleFieldChange('username', e.target.value)} placeholder="username" />
+            </label>
+            <label>
+              <span>Display name</span>
+              <input value={form.display_name} onChange={(e) => handleFieldChange('display_name', e.target.value)} placeholder="display name" />
+            </label>
+            <label>
+              <span>Title</span>
+              <input value={form.title} onChange={(e) => handleFieldChange('title', e.target.value)} placeholder="title" />
+            </label>
+            <label>
+              <span>Country</span>
+              <input value={form.country} onChange={(e) => handleFieldChange('country', e.target.value)} placeholder="country" />
+            </label>
+            <label>
+              <span>Timezone</span>
+              <input value={form.timezone} onChange={(e) => handleFieldChange('timezone', e.target.value)} placeholder="timezone" />
+            </label>
+            <label>
+              <span>Activity privacy</span>
+              <select value={form.privacy?.activity || 'friends'} onChange={(e) => handlePrivacyChange(e.target.value)}>
+                <option value="public">Public activity</option>
+                <option value="friends">Friends-only activity</option>
+                <option value="private">Private activity</option>
+              </select>
+            </label>
+            <label>
+              <span>Avatar URL</span>
+              <input value={form.avatar_url} onChange={(e) => handleFieldChange('avatar_url', e.target.value)} placeholder="avatar URL" />
+            </label>
+            <label>
+              <span>Banner URL</span>
+              <input value={form.banner_url} onChange={(e) => handleFieldChange('banner_url', e.target.value)} placeholder="banner URL" />
+            </label>
+          </div>
+          <label className="profile-textarea-label">
+            <span>Bio</span>
+            <textarea value={form.bio} onChange={(e) => handleFieldChange('bio', e.target.value)} placeholder="bio" rows={4} maxLength={300} />
+          </label>
+          <div className="profile-form-footer">
+            <p className="profile-hint">{form.bio.length}/300 characters</p>
+            <button className="profile-save-btn" onClick={handleSaveProfile} disabled={saving}>
+              {saving ? 'Saving...' : 'Save profile'}
+            </button>
+          </div>
         </section>
 
         <section className="profile-card">
-          <h3>Progress</h3>
+          <div className="card-head">
+            <h3>Progress</h3>
+            <p>Current performance snapshot.</p>
+          </div>
           <div className="profile-kpis">
-            <div><span>Level</span><strong>{profile?.progress?.level || 1}</strong></div>
-            <div><span>XP</span><strong>{profile?.progress?.xp || 0}</strong></div>
-            <div><span>Sessions</span><strong>{profile?.progress?.sessions || 0}</strong></div>
-            <div><span>Solved</span><strong>{profile?.progress?.solved_items || 0}</strong></div>
-            <div><span>Wins</span><strong>{profile?.progress?.wins || 0}</strong></div>
-            <div><span>Streak</span><strong>{profile?.streak?.current || 0}</strong></div>
+            <article className="kpi-card"><span>Level</span><strong>{profile?.progress?.level || 1}</strong></article>
+            <article className="kpi-card"><span>XP</span><strong>{profile?.progress?.xp || 0}</strong></article>
+            <article className="kpi-card"><span>Sessions</span><strong>{profile?.progress?.sessions || 0}</strong></article>
+            <article className="kpi-card"><span>Solved</span><strong>{profile?.progress?.solved_items || 0}</strong></article>
+            <article className="kpi-card"><span>Wins</span><strong>{profile?.progress?.wins || 0}</strong></article>
+            <article className="kpi-card"><span>Streak</span><strong>{profile?.streak?.current || 0}</strong></article>
           </div>
           <div className="xp-track">
             <div className="xp-fill" style={{ width: `${xpPercent}%` }} />
           </div>
           <p className="profile-hint">{profile?.progress?.to_next_level || 0} XP to next level</p>
 
-          <h4>Status</h4>
+          <h4 className="status-heading">Status</h4>
           <div className="status-list">
             {STATUS_OPTIONS.map((status) => (
               <button
@@ -182,7 +239,7 @@ function Profile() {
                 className={`status-pill ${profile?.status === status ? 'active' : ''}`}
                 onClick={() => handleStatusChange(status)}
               >
-                {status}
+                {STATUS_LABELS[status]}
               </button>
             ))}
           </div>
@@ -191,24 +248,33 @@ function Profile() {
 
       <div className="profile-grid">
         <section className="profile-card">
-          <h3>Badges</h3>
+          <div className="card-head">
+            <h3>Badges</h3>
+            <p>Milestones and achievements unlocked.</p>
+          </div>
           <div className="badge-grid">
             {(profile?.badges || []).map((badge) => (
               <div key={badge.id} className={`badge-card ${badge.is_locked ? 'locked' : 'unlocked'}`}>
                 <strong>{badge.name}</strong>
                 <p>{badge.description}</p>
-                <small>{badge.is_locked ? 'Locked' : `Unlocked ${badge.earned_at ? '' : ''}`}</small>
+                <small>{badge.is_locked ? 'Locked' : (badge.earned_at ? `Unlocked ${new Date(badge.earned_at).toLocaleDateString()}` : 'Unlocked')}</small>
               </div>
             ))}
           </div>
         </section>
 
         <section className="profile-card">
-          <h3>Showcase (pick 3)</h3>
+          <div className="card-head">
+            <h3>Showcase</h3>
+            <p>Pick up to three badges to highlight on your profile.</p>
+          </div>
           <div className="showcase-grid">
             {unlockedBadges.length === 0 && <p className="profile-hint">Unlock badges to pin them here.</p>}
             {unlockedBadges.map((badge) => (
-              <label key={badge.id} className="showcase-item">
+              <label
+                key={badge.id}
+                className={`showcase-item ${showcaseSelection.includes(badge.id) ? 'selected' : ''}`}
+              >
                 <input
                   type="checkbox"
                   checked={showcaseSelection.includes(badge.id)}
@@ -224,7 +290,10 @@ function Profile() {
       </div>
 
       <section className="profile-card activity-card">
-        <h3>Activity Feed</h3>
+        <div className="card-head">
+          <h3>Activity Feed</h3>
+          <p>Recent profile and gameplay updates.</p>
+        </div>
         {(profile?.activity_feed || []).length === 0 && <p className="profile-hint">No activity yet.</p>}
         <ul className="activity-list">
           {(profile?.activity_feed || []).map((item) => (
