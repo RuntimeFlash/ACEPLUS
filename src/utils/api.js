@@ -1,6 +1,6 @@
 // API Base URL configuration
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL;
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // Default headers that should be included in most requests
 const getDefaultHeaders = () => {

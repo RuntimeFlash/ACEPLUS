@@ -1,8 +1,12 @@
 {
- "rewrites": [
+  "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://aceplus-taupe.vercel.app/api/:path*"
+      "source": "/api/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ],
   "git": {

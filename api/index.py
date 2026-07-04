@@ -1,29 +1,57 @@
+"""AcePlus API -- FastAPI application entry point."""
+
 import os
 import sys
+from pathlib import Path
 
+# Add api directory to sys.path to allow absolute imports under Vercel and local uvicorn
+api_dir = Path(__file__).resolve().parent
+if str(api_dir) not in sys.path:
+    sys.path.insert(0, str(api_dir))
 
-def _resolve_backend_dir() -> str:
-    file_dir = os.path.dirname(os.path.abspath(__file__))
-    candidates = [
-        os.path.join(file_dir, "backend"),
-        os.path.join(os.path.dirname(file_dir), "backend"),
-    ]
-    for candidate in candidates:
-        normalized = os.path.normpath(candidate)
-        if os.path.isdir(normalized):
-            return normalized
-    # Fallback for local dev shape: <repo>/api/index.py + sibling <repo>/backend
-    return os.path.normpath(os.path.join(os.path.dirname(file_dir), "backend"))
+import logging
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
+from router import api_router
+from core.settings import settings
 
-BACKEND_DIR = _resolve_backend_dir()
-REPO_DIR = os.path.normpath(os.path.join(BACKEND_DIR, os.pardir))
-
-if BACKEND_DIR not in sys.path:
-    sys.path.insert(0, BACKEND_DIR)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+)
 
 # Force serverless-safe behavior in backend runtime.
+repo_dir = api_dir.parent
 os.environ.setdefault("SERVERLESS", "1")
-os.environ.setdefault("BACKEND_DATA_DIR", os.path.join(REPO_DIR, "Legacy Json Qs"))
+os.environ.setdefault("BACKEND_DATA_DIR", str(repo_dir / "Legacy Json Qs"))
 
-from main import app  # noqa: E402
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title=settings.app_name,
+        version=settings.app_version,
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=list(settings.cors_origins),
+        allow_credentials=settings.allow_credentials,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization"],
+        expose_headers=[
+            "Content-Type",
+            "Authorization",
+            "Cache-Control",
+            "X-Accel-Buffering",
+        ],
+    )
+
+    @app.get("/healthz", tags=["system"])
+    def healthz():
+        return {"status": "ok", "service": "aceplus-backend-v2"}
+
+    app.include_router(api_router)
+    return app
+
+
+app = create_app()

@@ -39,10 +39,10 @@
     "dev": "vite --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "start-backend": "cd backend && uvicorn main:app --host 0.0.0.0 --port 9027",
-    "test-backend": "cd backend && pytest",
-    "migrate-json-mongo": "cd backend && python scripts/migrate_json_to_mongo.py",
-    "setup": "cd backend && python setup.py"
+    "backend": "cd api && ../.venv/bin/python -m uvicorn index:app --host 0.0.0.0 --port 9027 --reload",
+    "test-backend": "cd api && ../.venv/bin/pytest",
+    "migrate-json-mongo": "cd api && ../.venv/bin/python scripts/migrate_json_to_mongo.py",
+    "setup": "cd api && python setup.py"
   },
   "eslintConfig": {
     "extends": [
