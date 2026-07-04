@@ -43,11 +43,70 @@ const ExamLegacyRedirect = () => {
 };
 
 function App() {
- const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [completedTasks, setCompletedTasks] = useState([]);
   const [refreshCoins, setRefreshCoins] = useState(false);
   const location = useLocation();
+
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isAndroid, setIsAndroid] = useState(false);
+
+  useEffect(() => {
+    // Check if device is Android
+    const checkAndroid = /Android/i.test(navigator.userAgent);
+    setIsAndroid(checkAndroid);
+
+    // Function to check if the app is running as an installed PWA
+    const checkInstallation = () => {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      const isIOSStandalone = window.navigator.standalone === true; 
+      setIsInstalled(isStandalone || isIOSStandalone);
+    };
+
+    // Run the check on initial load
+    checkInstallation();
+
+    // Listen for changes (in case they install it while the tab is open)
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    mediaQuery.addEventListener('change', checkInstallation);
+
+    // Listen for beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    // Listen for successful installation
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      mediaQuery.removeEventListener('change', checkInstallation);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      alert(
+        "Installation prompt is preparing or not supported on this browser. " +
+        "Please tap the menu icon (three dots) in Chrome's top right corner and select 'Install app' or 'Add to Home screen'."
+      );
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+    setDeferredPrompt(null);
+  };
 
   const handleTaskCompletion = (tasks) => {
     setCompletedTasks(tasks);
@@ -62,6 +121,44 @@ function App() {
   useEffect(() => {
     updateAuthState();
   }, []);
+
+  // THE BLOCKADE: Show if they are on Android and haven't installed it yet
+  if (isAndroid && !isInstalled) {
+    return (
+      <div className="pwa-blockade-container">
+        <div className="pwa-card">
+          <img src="/logo512.png" alt="AcePlus Logo" className="pwa-logo" />
+          <h1 className="pwa-title">Install AcePlus</h1>
+          <p className="pwa-description">
+            To take exams, practice test series, and view your detailed performance analysis, you must install the AcePlus app on your phone.
+          </p>
+          
+          <button className="pwa-btn-install" onClick={handleInstallClick}>
+            <i className="fa-solid fa-download"></i>
+            Install App to Unlock
+          </button>
+
+          <div className="pwa-manual-instructions">
+            <h3 className="pwa-manual-title">Or Install Manually</h3>
+            <ul className="pwa-steps">
+              <li>
+                <span className="pwa-step-num">1</span>
+                <span>Tap Chrome's menu icon <strong>(⋮)</strong> in the top-right corner.</span>
+              </li>
+              <li>
+                <span className="pwa-step-num">2</span>
+                <span>Select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.</span>
+              </li>
+              <li>
+                <span className="pwa-step-num">3</span>
+                <span>Open <strong>AcePlus</strong> from your home screen to log in.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const showHeader = location.pathname !== '/';
 
