@@ -49,27 +49,24 @@ function App() {
   const [refreshCoins, setRefreshCoins] = useState(false);
   const location = useLocation();
 
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isAndroid] = useState(() => /Android/i.test(navigator.userAgent));
+  const [isInstalled, setIsInstalled] = useState(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isIOSStandalone = window.navigator.standalone === true; 
+    return isStandalone || isIOSStandalone;
+  });
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isAndroid, setIsAndroid] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [downloadFinished, setDownloadFinished] = useState(false);
 
   useEffect(() => {
-    // Check if device is Android
-    const checkAndroid = /Android/i.test(navigator.userAgent);
-    setIsAndroid(checkAndroid);
-
     // Function to check if the app is running as an installed PWA
     const checkInstallation = () => {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
       const isIOSStandalone = window.navigator.standalone === true; 
       setIsInstalled(isStandalone || isIOSStandalone);
     };
-
-    // Run the check on initial load
-    checkInstallation();
 
     // Listen for changes (in case they install it while the tab is open)
     const mediaQuery = window.matchMedia('(display-mode: standalone)');
@@ -83,7 +80,8 @@ function App() {
 
     // Listen for successful installation
     const handleAppInstalled = () => {
-      setIsInstalled(true);
+      // Do NOT set isInstalled to true here so that the browser tab remains blocked,
+      // forcing the user to close Chrome and open the newly installed standalone app.
       setDeferredPrompt(null);
     };
 
