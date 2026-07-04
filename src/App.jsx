@@ -52,6 +52,9 @@ function App() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isAndroid, setIsAndroid] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloadFinished, setDownloadFinished] = useState(false);
 
   useEffect(() => {
     // Check if device is Android
@@ -94,18 +97,47 @@ function App() {
     };
   }, []);
 
+  const startDownloader = () => {
+    setIsDownloading(true);
+    setDownloadProgress(0);
+    setDownloadFinished(false);
+
+    const duration = 20000; // 20 seconds
+    const intervalTime = 100; // Update every 100ms
+    const totalSteps = duration / intervalTime;
+    let currentStep = 0;
+
+    const timer = setInterval(() => {
+      currentStep++;
+      const progress = Math.min(Math.round((currentStep / totalSteps) * 100), 100);
+      setDownloadProgress(progress);
+
+      if (currentStep >= totalSteps) {
+        clearInterval(timer);
+        setIsDownloading(false);
+        setDownloadFinished(true);
+      }
+    }, intervalTime);
+  };
+
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
       alert(
-        "Installation prompt is preparing or not supported on this browser. " +
-        "Please tap the menu icon (three dots) in Chrome's top right corner and select 'Install app' or 'Add to Home screen'."
+        "Direct installation trigger is not supported on this browser. " +
+        "We will simulate setup; please click 'Add' or 'Install' if prompted, or use the menu icon (⋮) in Chrome's top-right corner to 'Install app' manually."
       );
+      startDownloader();
       return;
     }
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
-    setDeferredPrompt(null);
+    try {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to the install prompt: ${outcome}`);
+      setDeferredPrompt(null);
+    } catch (err) {
+      console.error("Installation prompt error:", err);
+    }
+    startDownloader();
   };
 
   const handleTaskCompletion = (tasks) => {
@@ -122,39 +154,75 @@ function App() {
     updateAuthState();
   }, []);
 
+  const getStatusText = (progress) => {
+    if (progress < 20) return "Downloading application package...";
+    if (progress < 45) return "Extracting bundle files...";
+    if (progress < 70) return "Setting up offline resources...";
+    if (progress < 90) return "Configuring application database...";
+    return "Finalizing installation...";
+  };
+
   // THE BLOCKADE: Show if they are on Android and haven't installed it yet
   if (isAndroid && !isInstalled) {
     return (
       <div className="pwa-blockade-container">
         <div className="pwa-card">
-          <img src="/logo512.png" alt="AcePlus Logo" className="pwa-logo" />
-          <h1 className="pwa-title">Install AcePlus</h1>
-          <p className="pwa-description">
-            To take exams, practice test series, and view your detailed performance analysis, you must install the AcePlus app on your phone.
-          </p>
-          
-          <button className="pwa-btn-install" onClick={handleInstallClick}>
-            <i className="fa-solid fa-download"></i>
-            Install App to Unlock
-          </button>
+          {downloadFinished ? (
+            <>
+              <div className="pwa-success-icon">
+                <i className="fa-solid fa-circle-check"></i>
+              </div>
+              <h2 className="pwa-success-title">App Ready! 🎉</h2>
+              <p className="pwa-launch-tip">
+                AcePlus has been successfully set up. Close this browser tab, look for the <strong>Ace+</strong> icon on your home screen or app list, and open it to begin!
+              </p>
+            </>
+          ) : isDownloading ? (
+            <>
+              <h2 className="pwa-success-title" style={{ marginBottom: '24px' }}>Installing AcePlus</h2>
+              <div className="pwa-downloader-container">
+                <div className="pwa-progress-percentage">{downloadProgress}%</div>
+                <div className="pwa-progress-bar-bg">
+                  <div 
+                    className="pwa-progress-bar-fill" 
+                    style={{ width: `${downloadProgress}%` }}
+                  ></div>
+                </div>
+                <div className="pwa-status-text">{getStatusText(downloadProgress)}</div>
+              </div>
+            </>
+          ) : (
+            <>
+              <img src="/logo512.png" alt="AcePlus Logo" className="pwa-logo" />
+              <h1 className="pwa-title">Install AcePlus</h1>
+              <p className="pwa-description">
+                To take exams, practice test series, and view your detailed performance analysis, you must install the AcePlus app on your phone.
+              </p>
+              
+              <button className="pwa-btn-install" onClick={handleInstallClick}>
+                <i className="fa-solid fa-download"></i>
+                Install App to Unlock
+              </button>
 
-          <div className="pwa-manual-instructions">
-            <h3 className="pwa-manual-title">Or Install Manually</h3>
-            <ul className="pwa-steps">
-              <li>
-                <span className="pwa-step-num">1</span>
-                <span>Tap Chrome's menu icon <strong>(⋮)</strong> in the top-right corner.</span>
-              </li>
-              <li>
-                <span className="pwa-step-num">2</span>
-                <span>Select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.</span>
-              </li>
-              <li>
-                <span className="pwa-step-num">3</span>
-                <span>Open <strong>AcePlus</strong> from your home screen to log in.</span>
-              </li>
-            </ul>
-          </div>
+              <div className="pwa-manual-instructions">
+                <h3 className="pwa-manual-title">Or Install Manually</h3>
+                <ul className="pwa-steps">
+                  <li>
+                    <span className="pwa-step-num">1</span>
+                    <span>Tap Chrome's menu icon <strong>(⋮)</strong> in the top-right corner.</span>
+                  </li>
+                  <li>
+                    <span className="pwa-step-num">2</span>
+                    <span>Select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.</span>
+                  </li>
+                  <li>
+                    <span className="pwa-step-num">3</span>
+                    <span>Open <strong>AcePlus</strong> from your home screen to log in.</span>
+                  </li>
+                </ul>
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
