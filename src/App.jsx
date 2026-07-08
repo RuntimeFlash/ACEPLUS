@@ -182,6 +182,8 @@ function App() {
         startRealDownloader();
       } else {
         console.log("Install prompt dismissed by user.");
+        alert("Installation cancelled. The page will now reload so you can try again.");
+        window.location.reload();
       }
     } catch (err) {
       console.error("Installation prompt error:", err);
