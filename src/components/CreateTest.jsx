@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaArrowLeft, FaArrowRight, FaEdit, FaTrash, FaPlus, FaInfoCircle, FaUpload, FaCalendarAlt } from 'react-icons/fa';
-import { Dialog } from '@mui/material';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format, differenceInDays } from 'date-fns';
@@ -727,7 +726,9 @@ const CreateTest = () => {
                     </div>
                 )}
 
-                <Dialog open={showPrivacyNotice} onClose={() => setShowPrivacyNotice(false)} PaperProps={{ className: 'privacy-dialog-paper' }}>
+                {showPrivacyNotice && (
+                    <div className="dialog-overlay" onClick={() => setShowPrivacyNotice(false)}>
+                        <div className="privacy-dialog-paper" onClick={e => e.stopPropagation()}>
                     <div className="dialog-content privacy-dialog">
                         <h3>🔒 Privacy Notice</h3>
                         <div className="privacy-text">
@@ -742,9 +743,11 @@ const CreateTest = () => {
                              <button onClick={handleAgreeToPrivacy} className="btn-primary agree-btn">I Agree</button>
                         </div>
                     </div>
-                </Dialog>
+                </div></div>)}
                 
-                <Dialog open={showNoQuestionsDialog} onClose={handleCloseNoQuestionsDialog} PaperProps={{className: 'no-questions-dialog-paper'}}>
+                {showNoQuestionsDialog && (
+                    <div className="dialog-overlay" onClick={handleCloseNoQuestionsDialog}>
+                        <div className="no-questions-dialog-paper" onClick={e => e.stopPropagation()}>
                      <div className="dialog-content no-questions-dialog">
                          <div className="dialog-icon">⚠️</div>
                          <h3>No Questions Detected</h3>
@@ -763,7 +766,7 @@ const CreateTest = () => {
                              <button onClick={handleCloseNoQuestionsDialog} className="btn-primary">I Understand</button>
                          </div>
                      </div>
-                </Dialog>
+                </div></div>)}
 
                 <AnimatePresence>
                 {selectedImage && (

@@ -1,0 +1,237 @@
+/* ============================================================
+   Subject Details
+   ============================================================ */
+
+/* Container — NO sidebar margin, parent handles it */
+.subject-details-container {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-8);
+}
+
+/* ── Title ───────────────────────────────────────── */
+
+.subject-title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-8);
+  text-align: center;
+}
+
+/* ── Detail Grid ─────────────────────────────────── */
+
+.subject-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+}
+
+/* ── Detail Card ─────────────────────────────────── */
+
+.subject-detail-card {
+  background: var(--bg-raised);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  padding: var(--space-6);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  transition: transform var(--duration-normal) var(--ease-default),
+              box-shadow var(--duration-normal) var(--ease-default);
+}
+
+/* Colored top stripe using --card-color */
+.subject-detail-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--card-color, var(--primary));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.subject-detail-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Card Content ────────────────────────────────── */
+
+.card-icon {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-3);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-3);
+}
+
+.card-value {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  line-height: var(--leading-tight);
+}
+
+/* ── Skeleton Loading ────────────────────────────── */
+
+.subject-detail-card.skeleton {
+  background: var(--bg-surface);
+}
+
+.subject-detail-card.skeleton::before {
+  display: none;
+}
+
+.subject-detail-card .skeleton-text {
+  height: 16px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-hover);
+  background-image: linear-gradient(
+    110deg,
+    var(--bg-hover) 25%,
+    var(--bg-surface) 37%,
+    var(--bg-hover) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  margin: var(--space-3) auto;
+}
+
+.subject-detail-card .skeleton-text:first-child {
+  width: 70%;
+  height: 14px;
+}
+
+.subject-detail-card .skeleton-text:last-child {
+  width: 45%;
+  height: 28px;
+}
+
+/* ── Modal / Popup ───────────────────────────────── */
+
+.subject-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.subject-popup {
+  background: var(--bg-raised);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
+  padding: var(--space-8);
+  max-width: 560px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+  position: relative;
+}
+
+.popup-content {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+.popup-content h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.close-button {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-default),
+              color var(--duration-fast) var(--ease-default);
+}
+
+.close-button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ── Lesson Chips ────────────────────────────────── */
+
+.lessons-attempted {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.lesson-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  transition: background var(--duration-fast) var(--ease-default);
+}
+
+.lesson-item:hover {
+  background: var(--bg-hover);
+}
+
+/* ── Responsive ──────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .subject-details-container {
+    padding: var(--space-4);
+  }
+
+  .subject-title {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-6);
+  }
+
+  .subject-details-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .subject-details-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

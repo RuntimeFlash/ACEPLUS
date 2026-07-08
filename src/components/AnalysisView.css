@@ -1,0 +1,186 @@
+/* ============================================================
+   Analysis View
+   ============================================================ */
+
+/* Container — NO sidebar margin, parent handles it */
+.analysis-container {
+  padding: var(--space-8);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Title ───────────────────────────────────────── */
+
+.analysis-title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+/* ── Card Grid ───────────────────────────────────── */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-5);
+  width: 100%;
+  max-width: var(--content-max-width);
+}
+
+/* ── Analysis Card ───────────────────────────────── */
+
+.analysis-card {
+  background: var(--bg-raised);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  padding: var(--space-6);
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--duration-normal) var(--ease-default),
+              box-shadow var(--duration-normal) var(--ease-default);
+}
+
+/* Colored top stripe */
+.analysis-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--card-color, var(--primary));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.analysis-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Card Content ────────────────────────────────── */
+
+.card-icon {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-3);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.card-content {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+.card-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: var(--primary);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-default),
+              transform var(--duration-fast) var(--ease-default);
+}
+
+.card-button:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+/* ── Under Construction / Placeholder ────────────── */
+
+.analysis-placeholder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  text-align: center;
+  padding: var(--space-5);
+}
+
+.analysis-placeholder h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.analysis-placeholder p {
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+/* ── Skeleton Loading ────────────────────────────── */
+
+.analysis-card.skeleton {
+  background: var(--bg-surface);
+}
+
+.analysis-card.skeleton::before {
+  display: none;
+}
+
+.analysis-card .skeleton-text {
+  height: 16px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-hover);
+  background-image: linear-gradient(
+    110deg,
+    var(--bg-hover) 25%,
+    var(--bg-surface) 37%,
+    var(--bg-hover) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  margin-bottom: var(--space-3);
+}
+
+.analysis-card .skeleton-text:first-child {
+  width: 70%;
+}
+
+.analysis-card .skeleton-text:last-child {
+  width: 40%;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .analysis-container {
+    padding: var(--space-4);
+  }
+
+  .analysis-title {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-6);
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+}

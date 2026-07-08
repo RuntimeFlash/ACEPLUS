@@ -142,19 +142,19 @@ const renderLatexString = (text) => {
 
 const ResultSkeleton = () => (
   <div className="question-result skeleton">
-    <div className="skeleton-text" style={{ width: '60%', height: '24px', marginBottom: '10px' }}></div>
-    <div className="skeleton-text" style={{ width: '40%', height: '18px', marginBottom: '10px' }}></div>
-    <div className="skeleton-text" style={{ width: '80%', height: '18px', marginBottom: '10px' }}></div>
+    <div className="skeleton-text" style={{ width: '60%', height: '24px', marginBottom: 'var(--space-3)' }}></div>
+    <div className="skeleton-text" style={{ width: '40%', height: '18px', marginBottom: 'var(--space-3)' }}></div>
+    <div className="skeleton-text" style={{ width: '80%', height: '18px', marginBottom: 'var(--space-3)' }}></div>
     <div className="skeleton-text" style={{ width: '70%', height: '18px' }}></div>
   </div>
 );
 
 const PerformanceAnalysisContainer = styled(motion.div)`
-  background: #1a1a1a;
-  border-radius: 12px;
+  background: var(--bg-raised);
+  border-radius: var(--radius-lg);
   padding: 2rem 0;
   margin: 2rem 0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px var(--shadow-md);
   overflow-wrap: break-word;
   word-wrap: break-word;
   hyphens: auto;
@@ -174,19 +174,19 @@ const PerformanceAnalysisContainer = styled(motion.div)`
     gap: 1rem;
     margin-bottom: 2rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-default);
 
     h2 {
       margin: 0;
-      font-size: 1.8rem;
-      background: linear-gradient(135deg, #ffffff 0%, #b3b3b3 100%);
+      font-size: var(--text-3xl);
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .analysis-icon {
-      font-size: 1.8rem;
-      color: #4a90e2;
+      font-size: var(--text-3xl);
+      color: var(--primary);
     }
   }
 
@@ -198,22 +198,22 @@ const PerformanceAnalysisContainer = styled(motion.div)`
       margin-bottom: 1.5rem;
       
       h2 {
-        font-size: 1.5rem;
+        font-size: var(--text-2xl);
       }
 
       .analysis-icon {
-        font-size: 1.5rem;
+        font-size: var(--text-2xl);
       }
     }
   }
 `;
 
 const AnalysisSection = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   margin-bottom: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
   
   /* Ensure smooth text wrapping */
   overflow-wrap: break-word;
@@ -226,26 +226,26 @@ const AnalysisSection = styled(motion.div)`
     gap: 0.8rem;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-default);
 
     .section-icon {
-      font-size: 1.4rem;
-      color: #4a90e2;
+      font-size: var(--text-xl);
+      color: var(--primary);
     }
 
     h3 {
       margin: 0;
-      font-size: 1.2rem;
+      font-size: var(--text-lg);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      color: #ffffff;
+      color: var(--text-primary);
       font-weight: 600;
     }
   }
 
   .section-content {
-    color: #e0e0e0;
-    font-size: 1.1rem;
+    color: var(--text-primary);
+    font-size: var(--text-lg);
     line-height: 1.6;
     letter-spacing: 0.3px;
     position: relative;
@@ -259,8 +259,8 @@ const AnalysisSection = styled(motion.div)`
       width: 2px;
       background: linear-gradient(180deg, 
         rgba(74, 144, 226, 0) 0%,
-        rgba(74, 144, 226, 0.3) 10%,
-        rgba(74, 144, 226, 0.3) 90%,
+        var(--primary-glow) 10%,
+        var(--primary-glow) 90%,
         rgba(74, 144, 226, 0) 100%
       );
     }
@@ -277,7 +277,7 @@ const AnalysisSection = styled(motion.div)`
         top: 0.8em;
         width: 0.8rem;
         height: 1px;
-        background: rgba(74, 144, 226, 0.3);
+        background: var(--primary-glow);
       }
 
       &:first-child {
@@ -289,7 +289,7 @@ const AnalysisSection = styled(motion.div)`
       }
 
       strong {
-        color: #4a90e2;
+        color: var(--primary);
         font-weight: 600;
       }
 
@@ -306,7 +306,7 @@ const AnalysisSection = styled(motion.div)`
           position: absolute;
           left: 1.5rem;
           top: 0.1em;
-          color: #4a90e2;
+          color: var(--primary);
           font-size: 1.2em;
         }
       }
@@ -340,16 +340,16 @@ const AnalysisSection = styled(motion.div)`
       margin-bottom: 1.2rem;
 
       .section-icon {
-        font-size: 1.2rem;
+        font-size: var(--text-lg);
       }
 
       h3 {
-        font-size: 1.1rem;
+        font-size: var(--text-lg);
       }
     }
 
     .section-content {
-      font-size: 1rem;
+      font-size: var(--text-base);
       line-height: 1.5;
 
       .content-line {
@@ -394,9 +394,9 @@ const AnalysisSection = styled(motion.div)`
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px var(--shadow-sm);
     transition: all 0.3s ease;
   }
 `;
@@ -511,20 +511,20 @@ const PerformanceAnalysis = ({ analysis }) => {
 const AnalyticsContainer = styled(motion.div)`
   margin: 20px auto;
   padding: 20px;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, var(--bg-raised) 0%, var(--bg-surface) 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
   max-width: 1200px;
   width: 100%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 32px var(--shadow-sm);
 `;
 
 const AnalyticsTitle = styled.h3`
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-  font-size: 1.2rem;
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
   font-weight: 600;
   margin-bottom: 1.5rem;
-  color: #ffffff;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -532,7 +532,7 @@ const AnalyticsTitle = styled.h3`
   text-align: center;
 
   svg {
-    color: #4a90e2;
+    color: var(--primary);
   }
 `;
 
@@ -545,10 +545,10 @@ const LessonGrid = styled.div`
 `;
 
 const LessonCard = styled(motion.div)`
-  background: linear-gradient(145deg, #1f1f1f, #242424);
+  background: linear-gradient(145deg, var(--bg-surface), var(--bg-surface));
   padding: 1.2rem;
-  border-radius: 12px;
-  border: 1px solid #383838;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
   transition: all 0.3s ease;
   flex: 0 1 300px;  
   min-width: 250px; 
@@ -556,12 +556,12 @@ const LessonCard = styled(motion.div)`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px var(--shadow-md);
     border-color: ${props => props.percentage >= 70 
-      ? '#4caf50' 
+      ? 'var(--success)' 
       : props.percentage >= 40 
-      ? '#ff9800' 
-      : '#f44336'};
+      ? 'var(--warning)' 
+      : 'var(--error)'};
   }
 `;
 
@@ -575,43 +575,43 @@ const LessonHeader = styled.div`
 const LessonName = styled.h4`
   font-weight: 500;
   margin: 0;
-  color: #ffffff;
-  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-size: var(--text-lg);
 `;
 
 const LessonScore = styled.span`
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: ${props => props.percentage >= 70 
-    ? '#4caf50' 
+    ? 'var(--success)' 
     : props.percentage >= 40 
-    ? '#ff9800' 
-    : '#f44336'};
+    ? 'var(--warning)' 
+    : 'var(--error)'};
   background-color: ${props => props.percentage >= 70 
-    ? 'rgba(76, 175, 80, 0.1)' 
+    ? 'var(--success-soft)' 
     : props.percentage >= 40 
-    ? 'rgba(255, 152, 0, 0.1)' 
-    : 'rgba(244, 67, 54, 0.1)'};
+    ? 'var(--warning-soft)' 
+    : 'var(--error-soft)'};
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 `;
 
 const ProgressBarBg = styled.div`
   width: 100%;
   height: 8px;
-  background-color: #2a2a2a;
-  border-radius: 999px;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-full);
   overflow: hidden;
 `;
 
 const ProgressBarFill = styled.div`
   height: 100%;
   background: ${props => props.percentage >= 70 
-    ? 'linear-gradient(90deg, #4caf50, #81c784)'
+    ? 'linear-gradient(90deg, var(--success), var(--success))'
     : props.percentage >= 40 
-    ? 'linear-gradient(90deg, #ff9800, #ffb74d)'
-    : 'linear-gradient(90deg, #f44336, #e57373)'};
-  border-radius: 999px;
+    ? 'linear-gradient(90deg, var(--warning), var(--warning))'
+    : 'linear-gradient(90deg, var(--error), var(--error))'};
+  border-radius: var(--radius-full);
   transition: width 0.5s ease, background-color 0.3s ease;
 `;
 
@@ -664,28 +664,28 @@ const OptionsList = styled.div`
 
 const Option = styled.div`
   padding: 1.2rem 1.5rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: ${props => {
-    if (props.$isCorrect) return 'rgba(76, 175, 80, 0.12)';
-    if (props.$isWrong) return 'rgba(244, 67, 54, 0.12)';
-    return 'rgba(255, 255, 255, 0.02)';
+    if (props.$isCorrect) return 'var(--success-soft)';
+    if (props.$isWrong) return 'var(--error-soft)';
+    return 'var(--bg-base)';
   }};
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid ${props => {
-    if (props.$isCorrect) return '#4caf50';
-    if (props.$isWrong) return '#f44336';
-    return 'rgba(255, 255, 255, 0.1)';
+    if (props.$isCorrect) return 'var(--success)';
+    if (props.$isWrong) return 'var(--error)';
+    return 'var(--border-default)';
   }};
   color: ${props => {
-    if (props.$isCorrect) return '#4caf50';
-    if (props.$isWrong) return '#f44336';
-    return '#ffffff';
+    if (props.$isCorrect) return 'var(--success)';
+    if (props.$isWrong) return 'var(--error)';
+    return 'var(--text-primary)';
   }};
   position: relative;
   padding-right: ${props => (props.$isSelected || props.$isCorrect || props.$isWrong) ? '3.5rem' : '1.5rem'};
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-  font-size: 1.1rem;
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
   line-height: 1.5;
   letter-spacing: 0.2px;
   font-weight: 500;
@@ -697,9 +697,9 @@ const Option = styled.div`
       right: 1.5rem;
       top: 50%;
       transform: translateY(-50%);
-      color: #f44336;
+      color: var(--error);
       font-weight: bold;
-      font-size: 1.4rem;
+      font-size: var(--text-xl);
     }
   `}
   
@@ -710,23 +710,23 @@ const Option = styled.div`
       right: 1.5rem;
       top: 50%;
       transform: translateY(-50%);
-      color: #4caf50;
+      color: var(--success);
       font-weight: bold;
-      font-size: 1.4rem;
+      font-size: var(--text-xl);
     }
   `}
 
   transition: all 0.2s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--shadow-sm);
   
   &:hover {
     background: ${props => {
-      if (props.$isCorrect) return 'rgba(76, 175, 80, 0.18)';
-      if (props.$isWrong) return 'rgba(244, 67, 54, 0.18)';
-      return 'rgba(255, 255, 255, 0.08)';
+      if (props.$isCorrect) return 'var(--success-soft)';
+      if (props.$isWrong) return 'var(--error-soft)';
+      return 'var(--bg-hover)';
     }};
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px var(--shadow-md);
   }
 
   .katex {
@@ -742,27 +742,25 @@ const ExamResultsWrapper = styled.div`
   padding-top: 40px;
   transition: margin-left 0.3s ease-in-out;
   margin-left: 80px;
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0.2px;
   * {
-    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-family: var(--font-body);
   }
 
   h1 {
     font-weight: 700;
-    font-size: 2.2rem;
+    font-size: var(--text-4xl);
     letter-spacing: -0.5px;
-    color: #ffffff;
+    color: var(--text-primary);
     margin-bottom: 1.5rem;
     text-transform: uppercase;
-    background: linear-gradient(135deg, #ffffff 0%, #b3b3b3 100%);
+    background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
-  .sidebar:hover ~ & {
-    margin-left: 220px;
-  }
+  
 
   @media (max-width: 768px) {
     margin-left: 0;
@@ -780,15 +778,15 @@ const ExamResultsContainer = styled.div`
 
   .question-result {
     margin-bottom: 2rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-surface);
     padding: 2rem 2rem 1.5rem;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-default);
     
     h3 {
-      font-size: 1.4rem;
+      font-size: var(--text-xl);
       font-weight: 600;
-      color: #ffffff;
+      color: var(--text-primary);
       margin-bottom: 1.5rem;
       line-height: 1.4;
       letter-spacing: 0.2px;
@@ -796,10 +794,10 @@ const ExamResultsContainer = styled.div`
 
     .solution-button {
       background: transparent;
-      border: 1px solid #4a90e2;
-      color: #4a90e2;
+      border: 1px solid var(--primary);
+      color: var(--primary);
       padding: 0.5rem 1rem;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -809,7 +807,7 @@ const ExamResultsContainer = styled.div`
 
 
       &:hover {
-        background: rgba(74, 144, 226, 0.1);
+        background: var(--primary-soft);
       }
 
       @media (max-width: 768px) {
@@ -819,31 +817,31 @@ const ExamResultsContainer = styled.div`
     }
 
     .solution-text {
-      color: #f44336;
+      color: var(--error);
     }
 
     .solution-card {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
+      background: var(--bg-hover);
+      border-radius: var(--radius-md);
       padding: 1.5rem;
       margin-top: 1.5rem;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--bg-hover);
       display: ${props => props.isVisible ? 'block' : 'none'};
 
       h4 {
-        font-size: 1.2rem;
+        font-size: var(--text-lg);
         font-weight: 600;
-        color: #e0e0e0;
+        color: var(--text-primary);
         margin-bottom: 1rem;
         letter-spacing: 0.2px;
         text-transform: uppercase;
       }
 
       p {
-        font-size: 1.1rem;
+        font-size: var(--text-lg);
         line-height: 1.6;
-        color: #ffffff;
+        color: var(--text-primary);
         letter-spacing: 0.2px;
         font-weight: 400;
         margin-bottom: 0;
@@ -867,8 +865,8 @@ const ExamResultsContainer = styled.div`
 `;
 
 const ExamIdSection = styled.div`
-  background: #1a1a1a;
-  border-radius: 12px;
+  background: var(--bg-raised);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   margin: 1.5rem auto;
   max-width: 800px;
@@ -877,8 +875,8 @@ const ExamIdSection = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px var(--shadow-md);
+  border: 1px solid var(--border-default);
 
   @media (max-width: 768px) {
     padding: 1.2rem;
@@ -889,8 +887,8 @@ const ExamIdSection = styled.div`
 
 const ExamIdTitle = styled.h3`
   margin: 0;
-  color: #667eea;
-  font-size: 1.5rem;
+  color: var(--primary);
+  font-size: var(--text-2xl);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -899,7 +897,7 @@ const ExamIdTitle = styled.h3`
   text-transform: uppercase;
 
   svg {
-    font-size: 1.6rem;
+    font-size: var(--text-2xl);
   }
 `;
 
@@ -912,13 +910,13 @@ const ExamIdContent = styled.div`
 `;
 
 const ExamIdLabel = styled.div`
-  color: #b0b0b0;
-  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
 `;
 
 const ResultsSummaryCard = styled(motion.div)`
-  background: linear-gradient(135deg, #1E1E1E 0%, #2D2D2D 100%);
-  border-radius: 24px;
+  background: linear-gradient(135deg, var(--bg-raised) 0%, var(--bg-hover) 100%);
+  border-radius: var(--radius-xl);
   padding: 3rem;
   margin: 1rem auto;
   max-width: 800px;
@@ -927,7 +925,7 @@ const ResultsSummaryCard = styled(motion.div)`
   overflow: hidden;
   box-shadow: 
     0 25px 50px -12px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
+    0 0 0 1px var(--border-default);
   transform-style: preserve-3d;
   perspective: 1000px;
   transition: all 0.3s ease;
@@ -947,10 +945,10 @@ const ResultsSummaryCard = styled(motion.div)`
     right: 0;
     height: 3px;
     background: ${props => props.percentage >= 70 
-      ? 'linear-gradient(90deg, #4CAF50, #81C784)'
+      ? 'linear-gradient(90deg, var(--success), var(--success))'
       : props.percentage >= 40 
-      ? 'linear-gradient(90deg, #FF9800, #FFB74D)'
-      : 'linear-gradient(90deg, #F44336, #E57373)'};
+      ? 'linear-gradient(90deg, var(--warning), var(--warning))'
+      : 'linear-gradient(90deg, var(--error), var(--error))'};
   }
 
   @media (max-width: 768px) {
@@ -976,7 +974,7 @@ const CircularProgress = styled(motion.div)`
   position: relative;
   width: 280px;
   height: 280px;
-  background: linear-gradient(145deg, #1f1f1f, #242424);
+  background: linear-gradient(145deg, var(--bg-surface), var(--bg-surface));
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1003,12 +1001,12 @@ const CircularProgress = styled(motion.div)`
     border-radius: 50%;
     background: conic-gradient(
       ${props => props.percentage >= 70 
-        ? '#4CAF50'
+        ? 'var(--success)'
         : props.percentage >= 40 
-        ? '#FF9800'
-        : '#F44336'} 
+        ? 'var(--warning)'
+        : 'var(--error)'} 
       ${props => props.percentage}%, 
-      #333 0
+      var(--border-subtle) 0
     );
     mask: radial-gradient(transparent 65%, black 66%);
     -webkit-mask: radial-gradient(transparent 65%, black 66%);
@@ -1047,7 +1045,7 @@ const ScoreDisplay = styled.div`
   text-align: center;
   position: relative;
   z-index: 1;
-  background: linear-gradient(145deg, #1a1a1a, #222);
+  background: linear-gradient(145deg, var(--bg-raised), var(--bg-surface));
   padding: 2rem;
   border-radius: 50%;
   width: 75%;
@@ -1071,15 +1069,15 @@ const ScoreDisplay = styled.div`
     font-size: 4.5rem;
     font-weight: 800;
     background: ${props => props.percentage >= 70 
-      ? 'linear-gradient(to bottom right, #fff, #4CAF50)'
+      ? 'linear-gradient(to bottom right, var(--text-primary), var(--success))'
       : props.percentage >= 40 
-      ? 'linear-gradient(to bottom right, #fff, #FF9800)'
-      : 'linear-gradient(to bottom right, #fff, #F44336)'};
+      ? 'linear-gradient(to bottom right, var(--text-primary), var(--warning))'
+      : 'linear-gradient(to bottom right, var(--text-primary), var(--error))'};
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     line-height: 1;
     margin-bottom: 0.5rem;
-    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-family: var(--font-body);
     position: relative;
     display: flex;
     align-items: center;
@@ -1091,7 +1089,7 @@ const ScoreDisplay = styled.div`
     
     &::after {
       content: '%';
-      font-size: 2rem;
+      font-size: var(--text-3xl);
       margin-left: 0.3rem;
       opacity: 0.8;
       background: inherit;
@@ -1101,15 +1099,15 @@ const ScoreDisplay = styled.div`
   }
 
   .score {
-    font-size: 1.4rem;
-    color: #666;
+    font-size: var(--text-xl);
+    color: var(--text-muted);
     font-weight: 600;
     margin-top: 0.5rem;
     letter-spacing: 1px;
     transition: color 0.3s ease;
 
     ${CircularProgress}:hover & {
-      color: #888;
+      color: var(--text-muted);
     }
   }
 
@@ -1120,12 +1118,12 @@ const ScoreDisplay = styled.div`
       font-size: 3.5rem;
       
       &::after {
-        font-size: 1.6rem;
+        font-size: var(--text-2xl);
       }
     }
     
     .score {
-      font-size: 1.2rem;
+      font-size: var(--text-lg);
     }
   }
 `;
@@ -1134,21 +1132,21 @@ const StatsContainer = styled.div`  display: flex;
   flex-direction: column;
   gap: 2rem;
   padding-left: 2rem;
-  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  border-left: 2px solid var(--border-default);
 
   @media (max-width: 768px) {
     padding-left: 0;
     border-left: none;
-    border-top: 2px solid rgba(255, 255, 255, 0.1);
+    border-top: 2px solid var(--border-default);
     padding-top: 2rem;
   }
 `;
 
 const StatBox = styled.div`
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-surface);
   padding: 1.5rem;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
   transform-style: preserve-3d;
   transition: all 0.3s ease;
   cursor: pointer;
@@ -1156,16 +1154,16 @@ const StatBox = styled.div`
 
   &:hover {
     transform: translateY(-5px) rotateX(2deg) rotateY(-2deg);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--bg-hover);
+    border-color: var(--border-default);
     box-shadow: 
       0 15px 30px -10px rgba(0, 0, 0, 0.3),
-      0 0 0 1px rgba(255, 255, 255, 0.1);
+      0 0 0 1px var(--border-default);
   }
 
   .label {
-    font-size: 1rem;
-    color: #888;
+    font-size: var(--text-base);
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1.5px;
     margin-bottom: 0.5rem;
@@ -1174,9 +1172,9 @@ const StatBox = styled.div`
   }
 
   .value {
-    font-size: 2.2rem;
+    font-size: var(--text-4xl);
     font-weight: 700;
-    color: #FFF;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1185,14 +1183,14 @@ const StatBox = styled.div`
   }
 
   .subtitle {
-    font-size: 0.9rem;
-    color: #666;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
     margin-top: 0.5rem;
     transition: color 0.3s ease;
   }
 
   &:hover .label {
-    color: #aaa;
+    color: var(--text-secondary);
   }
 
   &:hover .value {
@@ -1200,7 +1198,7 @@ const StatBox = styled.div`
   }
 
   &:hover .subtitle {
-    color: #888;
+    color: var(--text-muted);
   }
 `;
 
@@ -1208,10 +1206,10 @@ const GradeIndicator = styled.div`
   font-size: 3.5rem;
   font-weight: 800;
   color: ${props => props.percentage >= 70 
-    ? '#4CAF50'
+    ? 'var(--success)'
     : props.percentage >= 40 
-    ? '#FF9800'
-    : '#F44336'};
+    ? 'var(--warning)'
+    : 'var(--error)'};
   text-shadow: 0 0 20px ${props => props.percentage >= 70 
     ? 'rgba(76, 175, 80, 0.3)'
     : props.percentage >= 40 
@@ -1248,9 +1246,9 @@ const LoadingDots = styled(motion.div)`
 const SolutionSkeletonLoader = styled(motion.div)`
   margin-top: 1.5rem;
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: rgba(244, 67, 54, 0.05);
-  border: 1px solid rgba(244, 67, 54, 0.1);
+  border: 1px solid var(--error-soft);
   height: 80px;
   position: relative;
   overflow: hidden;
@@ -1298,18 +1296,18 @@ const SolutionSkeletonLoader = styled(motion.div)`
 const AutoGenerateNotification = styled(motion.div)`
   background: rgba(33, 150, 243, 0.1);
   border: 1px solid rgba(33, 150, 243, 0.3);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 1rem;
   margin: 1rem auto;
   max-width: 800px;
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  color: #2196f3;
-  font-size: 0.95rem;
+  color: var(--primary);
+  font-size: var(--text-sm);
   
   svg {
-    font-size: 1.2rem;
+    font-size: var(--text-lg);
   }
 `;
 
@@ -1608,7 +1606,7 @@ const ExamResults = ({ onTaskCompletion }) => {
                       ? 'B' 
                       : 'C'}
                   </GradeIndicator>
-                  <span style={{ fontSize: '1.2rem', color: '#666' }}>
+                  <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>
                     {results.filter(r => r.is_correct).length / results.length * 100 >= 70 
                       ? 'Excellent' 
                       : results.filter(r => r.is_correct).length / results.length * 100 >= 40 
@@ -1623,7 +1621,7 @@ const ExamResults = ({ onTaskCompletion }) => {
                 <div className="value" style={{ justifyContent: 'center', fontSize: '2.5rem' }}>
                   {examData?.lesson_analytics ? Object.keys(examData.lesson_analytics).length : 0}
                 </div>
-                <div className="subtitle" style={{ fontSize: '1.1rem', color: '#888', marginTop: '0.8rem' }}>
+                <div className="subtitle" style={{ fontSize: '1.1rem', color: 'var(--text-muted)', marginTop: '0.8rem' }}>
                   Topics Covered in Exam
                 </div>
               </StatBox>

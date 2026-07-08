@@ -30,10 +30,10 @@ const ProgressRing = ({ percentage }) => {
   
   // Get color based on percentage
   const getColor = (percentage) => {
-    if (percentage >= 80) return "#4CAF50";      // Green for excellent
-    if (percentage >= 60) return "#FFC107";      // Yellow for good
-    if (percentage >= 40) return "#FF9800";      // Orange for average
-    return "#FF5252";                            // Red for needs improvement
+    if (percentage >= 80) return "var(--success)";
+    if (percentage >= 60) return "var(--warning)";
+    if (percentage >= 40) return "var(--accent)";
+    return "var(--error)";
   };
 
   const color = getColor(percentage);
@@ -122,7 +122,7 @@ const HistoryCard = ({ exam, onClick }) => {
 
   return (
     <motion.div
-      className={`exam-card ${isTest ? 'test-card' : ''}`}
+      className={`exam-card subject-${exam.subject?.toLowerCase()} ${isTest ? 'test-card' : ''}`}
       onClick={() => onClick(exam["exam-id"])}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}

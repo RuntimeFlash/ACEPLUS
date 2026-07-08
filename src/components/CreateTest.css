@@ -1,25 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-:root {
-  --primary-color: #4facfe;
-  --secondary-color: #00f2fe;
-  --bg-color: #121212;
-  --card-bg-color: rgba(33, 33, 33, 0.8);
-  --input-bg-color: rgba(33, 33, 33, 0.6);
-  --text-color: #fff;
-  --text-color-secondary: #b0b0b0;
-  --border-color: rgba(79, 172, 254, 0.2);
-  --border-color-hover: rgba(79, 172, 254, 0.4);
-  --success-color: #4CAF50;
-  --error-color: #f44336;
-}
+
 
 .create-test-page {
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
   margin-bottom: 50px;
-  color: var(--text-color);
-  background-color: var(--bg-color);
+  color: var(--text-primary);
+  background-color: var(--bg-base);
   position: relative;
   overflow-x: hidden;
 }
@@ -38,7 +26,7 @@
 .create-test-header h1 {
   font-size: 2.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 2px 10px rgba(79, 172, 254, 0.3);
@@ -56,8 +44,8 @@
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: var(--input-bg-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   font-weight: 600;
 }
 
@@ -66,14 +54,14 @@
 }
 
 .test-type-selector label:has(input:checked) {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: var(--bg-color);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: var(--bg-base);
   border-color: transparent;
   box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
 }
 
 .test-info-card, .custom-test-card, .assignment-section, .dialog-content {
-  background: var(--card-bg-color);
+  background: var(--bg-raised);
   border-radius: 24px;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -87,7 +75,7 @@
   font-size: 1.8rem;
   font-weight: 700;
   margin: 0 0 2rem 0;
-  color: var(--primary-color);
+  color: var(--primary);
 }
 
 .create-test-page .details-grid {
@@ -104,22 +92,22 @@
 }
 
 .create-test-page .detail-item {
-  background: var(--input-bg-color);
+  background: var(--bg-surface);
   padding: 1rem;
   border-radius: 12px;
   text-align: center;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
 }
 
 .create-test-page .detail-item p {
   margin: 0;
-  color: var(--text-color-secondary);
+  color: var(--text-primary-secondary);
   font-size: 1rem;
 }
 
 .create-test-page .detail-item span {
   display: block;
-  color: var(--text-color);
+  color: var(--text-primary);
   font-weight: 600;
   margin-top: 0.5rem;
   font-size: 1.1rem;
@@ -128,17 +116,17 @@
 .form-control {
   width: 100%;
   padding: 1rem;
-  background: var(--input-bg-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
-  color: var(--text-color);
+  color: var(--text-primary);
   font-size: 1rem;
   transition: all 0.3s ease;
 }
 
 .form-control:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.2);
 }
 
@@ -154,7 +142,7 @@ textarea.form-control {
 
 .custom-standards-selector h3 {
   margin-bottom: 1rem;
-  color: var(--text-color-secondary);
+  color: var(--text-primary-secondary);
   font-weight: 600;
 }
 
@@ -278,7 +266,7 @@ textarea.form-control {
 }
 
 .question-card.unanswered {
-    border-color: var(--error-color);
+    border-color: var(--error);
 }
 
 .buttons-container {
@@ -304,7 +292,7 @@ textarea.form-control {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   color: #000;
 }
 
@@ -322,25 +310,25 @@ textarea.form-control {
 }
 
 .btn-secondary {
-  background: var(--input-bg-color);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
 }
 
 .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: var(--border-color-hover);
+  border-color: var(--border-subtle-hover);
 }
 
 .btn-secondary.btn-danger {
-  color: var(--error-color);
-  border-color: var(--error-color);
+  color: var(--error);
+  border-color: var(--error);
 }
 
 .btn-secondary.btn-danger:hover {
   background: rgba(244, 67, 54, 0.1);
-  border-color: var(--error-color);
-  color: var(--error-color);
+  border-color: var(--error);
+  color: var(--error);
 }
 
 /* Assignment Section */
@@ -356,8 +344,8 @@ textarea.form-control {
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: var(--input-bg-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
 }
 
 .assignment-options input[type="radio"] {
@@ -365,9 +353,9 @@ textarea.form-control {
 }
 
 .assignment-options label:has(input:checked) {
-  background: var(--primary-color);
+  background: var(--primary);
   color: white;
-  border-color: var(--primary-color);
+  border-color: var(--primary);
 }
 
 .assignment-options label {
@@ -390,7 +378,7 @@ textarea.form-control {
 
 .option-text small {
     font-size: 0.85rem;
-    color: var(--text-color-secondary);
+    color: var(--text-primary-secondary);
     font-weight: 400;
 }
 
@@ -410,7 +398,7 @@ textarea.form-control {
 .student-list {
   max-height: 200px;
   overflow-y: auto;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   margin-top: 0.5rem;
   background: rgba(0,0,0,0.2);
@@ -434,7 +422,7 @@ textarea.form-control {
 }
 
 .selected-student-tag {
-  background: var(--primary-color);
+  background: var(--primary);
   padding: 0.25rem 0.75rem;
   border-radius: 8px;
   display: flex;
@@ -477,14 +465,14 @@ textarea.form-control {
 .dialog-content h3 {
   text-align: center;
   font-size: 1.5rem;
-  color: var(--primary-color);
+  color: var(--primary);
   margin: 0 0 1rem 0;
 }
 
 .dialog-content p {
   text-align: center;
   margin-bottom: 2rem;
-  color: var(--text-color-secondary);
+  color: var(--text-primary-secondary);
 }
 
 .dialog-buttons {
@@ -511,12 +499,12 @@ textarea.form-control {
 
 .progress-bg {
     fill: none;
-    stroke: var(--input-bg-color);
+    stroke: var(--bg-surface);
 }
 
 .progress-bar {
     fill: none;
-    stroke: var(--success-color);
+    stroke: var(--success);
     stroke-linecap: round;
     transition: stroke-dashoffset 0.5s ease-out;
 }
@@ -524,7 +512,7 @@ textarea.form-control {
 .progress-text {
     transform: rotate(90deg);
     transform-origin: 50% 50%;
-    fill: var(--text-color);
+    fill: var(--text-primary);
     font-size: 1rem;
     font-weight: 600;
     text-anchor: middle;
@@ -547,23 +535,23 @@ textarea.form-control {
     top: 0;
     height: 100%;
     width: 3px;
-    background-color: var(--error-color);
+    background-color: var(--error);
     border-radius: 2px;
 }
 
 .current-step-title {
     font-size: 1.8rem;
     font-weight: 700;
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 .next-step-info {
     font-size: 1rem;
-    color: var(--text-color-secondary);
+    color: var(--text-primary-secondary);
 }
 
 .step-card {
-    background: var(--card-bg-color);
+    background: var(--bg-raised);
     border-radius: 24px;
     padding: 2.5rem;
     margin-bottom: 2rem;
@@ -577,11 +565,11 @@ textarea.form-control {
     font-size: 1.8rem;
     font-weight: 700;
     margin: 0 0 2rem 0;
-    color: var(--primary-color);
+    color: var(--primary);
 }
 
 .step-card p {
-    color: var(--text-color-secondary);
+    color: var(--text-primary-secondary);
 }
 
 .navigation-buttons {
@@ -602,7 +590,7 @@ textarea.form-control {
     gap: 1rem;
     padding: 1rem;
     background: rgba(79, 172, 254, 0.1);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-subtle);
     border-radius: 12px;
     margin-bottom: 2rem;
     text-align: left;
@@ -610,7 +598,7 @@ textarea.form-control {
 
 .info-box svg {
     font-size: 1.5rem;
-    color: var(--primary-color);
+    color: var(--primary);
 }
 
 .detail-item.full-width {
@@ -631,7 +619,7 @@ textarea.form-control {
 
 .summary-card h3 {
     margin-top: 0;
-    color: var(--primary-color);
+    color: var(--primary);
 }
 
 .summary-card p {
@@ -640,7 +628,7 @@ textarea.form-control {
 }
 
 .summary-card strong {
-    color: var(--text-color-secondary);
+    color: var(--text-primary-secondary);
 }
 
 .finalize-btn {
@@ -656,14 +644,14 @@ textarea.form-control {
 }
 
 .question-source-selector .btn-secondary.active {
-  background: var(--primary-color);
+  background: var(--primary);
   color: white;
-  border-color: var(--primary-color);
+  border-color: var(--primary);
 }
 
 .image-upload-section {
   margin-top: 2rem;
-  border: 1px dashed var(--border-color);
+  border: 1px dashed var(--border-subtle);
   padding: 1.5rem;
   border-radius: 16px;
 }
@@ -679,8 +667,8 @@ textarea.form-control {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: var(--input-bg-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -688,7 +676,7 @@ textarea.form-control {
 
 .image-upload-button:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: var(--border-color-hover);
+  border-color: var(--border-subtle-hover);
 }
 
 .image-upload-button input {
@@ -698,7 +686,7 @@ textarea.form-control {
 .upload-progress-bar {
   width: 100%;
   height: 24px;
-  background-color: var(--input-bg-color);
+  background-color: var(--bg-surface);
   border-radius: 12px;
   position: relative;
   margin: 1rem 0;
@@ -707,7 +695,7 @@ textarea.form-control {
 
 .upload-progress-bar .progress {
   height: 100%;
-  background: var(--success-color);
+  background: var(--success);
   border-radius: 12px;
   transition: width 0.3s ease;
 }
@@ -759,7 +747,7 @@ textarea.form-control {
 }
 
 .delete-image-btn:hover {
-  background: var(--error-color);
+  background: var(--error);
 }
 
 .generate-btn {
@@ -801,7 +789,7 @@ textarea.form-control {
 .date-picker-icon {
     position: absolute;
     left: 1rem;
-    color: var(--text-color-secondary);
+    color: var(--text-primary-secondary);
     font-size: 1.2rem;
     z-index: 1;
 }
@@ -817,14 +805,14 @@ textarea.form-control {
 
 .clear-date-btn {
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-subtle);
     border-radius: 50%;
     width: 36px;
     height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-color-secondary);
+    color: var(--text-primary-secondary);
     font-size: 1.5rem;
     cursor: pointer;
     transition: all 0.2s;
@@ -832,7 +820,7 @@ textarea.form-control {
 }
 
 .clear-date-btn:hover {
-    color: var(--text-color);
+    color: var(--text-primary);
     background: rgba(255, 255, 255, 0.2);
 }
 
@@ -889,8 +877,8 @@ textarea.form-control {
 }
 
 .privacy-dialog-paper, .no-questions-dialog-paper {
-    background-color: var(--card-bg-color) !important;
-    color: var(--text-color) !important;
+    background-color: var(--bg-raised) !important;
+    color: var(--text-primary) !important;
     border-radius: 24px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
     backdrop-filter: blur(12px) !important;
@@ -899,7 +887,7 @@ textarea.form-control {
 
 .privacy-dialog h3 {
     font-weight: 700;
-    color: var(--error-color);
+    color: var(--error);
 }
 
 .privacy-text {
@@ -907,22 +895,22 @@ textarea.form-control {
     padding: 1.5rem;
     border-radius: 12px;
     margin: 1.5rem 0;
-    border: 1px solid var(--error-color);
+    border: 1px solid var(--error);
 }
 
 .agree-btn {
-    background: var(--error-color) !important;
+    background: var(--error) !important;
     color: white !important;
 }
 
 .no-questions-dialog .dialog-icon {
     font-size: 4rem;
-    color: var(--primary-color);
+    color: var(--primary);
     margin-bottom: 1rem;
 }
 
 .possible-reasons {
-    background: var(--input-bg-color);
+    background: var(--bg-surface);
     padding: 1.5rem;
     border-radius: 12px;
     margin: 1.5rem 0;
@@ -931,7 +919,7 @@ textarea.form-control {
 
 .possible-reasons h4 {
     margin: 0 0 1rem 0;
-    color: var(--primary-color);
+    color: var(--primary);
 }
 
 .possible-reasons ul {
@@ -947,11 +935,11 @@ textarea.form-control {
 .upload-status p {
     margin-top: 0.5rem;
     font-size: 0.9rem;
-    color: var(--text-color-secondary);
+    color: var(--text-primary-secondary);
 }
 
 .generation-status-container {
-    background: var(--input-bg-color);
+    background: var(--bg-surface);
     border-radius: 16px;
     padding: 2rem;
     margin-top: 2rem;
@@ -966,13 +954,13 @@ textarea.form-control {
     font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    color: var(--primary-color);
+    color: var(--primary);
 }
 
 .loading-message {
     text-align: center;
     font-size: 1rem;
-    color: var(--text-color-secondary);
+    color: var(--text-primary-secondary);
     padding: 1rem;
     background: rgba(0,0,0,0.2);
     border-radius: 12px;
@@ -982,7 +970,7 @@ textarea.form-control {
     display: flex;
     justify-content: space-between;
     font-size: 0.9rem;
-    color: var(--text-color-secondary);
+    color: var(--text-primary-secondary);
     margin-top: 0.5rem;
 }
 

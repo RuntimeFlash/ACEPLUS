@@ -18,36 +18,40 @@ const ErrorPopup = styled(motion.div)`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1100;
+  background: var(--bg-raised);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-subtle);
+  z-index: var(--z-modal);
   max-width: 400px;
   width: 90%;
   text-align: center;
 
   h3 {
-    margin: 0 0 15px;
-    color: #e74c3c;
+    margin: 0 0 var(--space-4);
+    color: var(--error);
+    font-family: var(--font-display);
   }
 
   p {
-    margin: 0 0 20px;
-    color: #666;
+    margin: 0 0 var(--space-5);
+    color: var(--text-secondary);
   }
 
   button {
-    background: #3498db;
-    color: white;
+    background: var(--primary);
+    color: var(--text-inverse);
     border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all var(--duration-fast) var(--ease-default);
+    font-weight: var(--weight-medium);
 
     &:hover {
-      background: #2980b9;
+      background: var(--primary-hover);
+      transform: translateY(-1px);
     }
   }
 `;
@@ -58,9 +62,9 @@ const Exam = () => {
   const [lessons, setLessons] = useState([]);
   const [availableLessons, setAvailableLessons] = useState([]);
   const [subjects] = useState([
-    { value: "Math", label: "Mathematics", icon: FaGraduationCap, color: "#4facfe" },
-    { value: "Science", label: "Science", icon: FaFlask, color: "#00f2fe" },
-    { value: "SS", label: "Social Studies", icon: FaGlobeAmericas, color: "#6c63ff" },
+    { value: "Math", label: "Mathematics", icon: FaGraduationCap, color: "var(--color-math)" },
+    { value: "Science", label: "Science", icon: FaFlask, color: "var(--color-science)" },
+    { value: "SS", label: "Social Studies", icon: FaGlobeAmericas, color: "var(--color-ss)" },
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLessonsLoading, setIsLessonsLoading] = useState(false);
@@ -222,7 +226,7 @@ const Exam = () => {
 
   const getSubjectColor = (subjectValue) => {
     const subjectData = subjects.find(s => s.value === subjectValue);
-    return subjectData ? subjectData.color : "#4facfe";
+    return subjectData ? subjectData.color : "var(--primary)";
   };
 
   return (

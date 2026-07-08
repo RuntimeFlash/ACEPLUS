@@ -1,0 +1,154 @@
+/* ============================================================
+   Sidebar — toggle-based, overlay on mobile
+   ============================================================ */
+
+.sidebar {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-collapsed);
+  height: calc(100vh - var(--header-height));
+  background: var(--bg-raised);
+  border-right: 1px solid var(--border-subtle);
+  padding: var(--space-3) 0;
+  z-index: var(--z-sidebar);
+  transition: width var(--duration-slow) var(--ease-default);
+  overflow: hidden;
+}
+
+.sidebar.expanded {
+  width: var(--sidebar-expanded);
+}
+
+/* ── Toggle Button ────────────────────────────────── */
+
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-2);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color var(--duration-fast);
+}
+
+.sidebar-toggle:hover {
+  color: var(--text-primary);
+}
+
+.sidebar-toggle svg {
+  font-size: 1.25rem;
+  transition: transform var(--duration-slow) var(--ease-default);
+}
+
+.sidebar.expanded .sidebar-toggle svg {
+  transform: rotate(180deg);
+}
+
+/* ── Navigation ───────────────────────────────────── */
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  transition: all var(--duration-fast) var(--ease-default);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sidebar-btn.active {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.sidebar-btn.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--primary);
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+}
+
+.sidebar-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.sidebar-btn-label {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  transition: opacity var(--duration-slow) var(--ease-default),
+              width var(--duration-slow) var(--ease-default);
+}
+
+.sidebar.expanded .sidebar-btn-label {
+  opacity: 1;
+  width: auto;
+}
+
+/* ── Mobile ───────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .sidebar {
+    top: 0;
+    height: 100vh;
+    width: var(--sidebar-expanded);
+    transform: translateX(-100%);
+    transition: transform var(--duration-slow) var(--ease-default);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar .sidebar-btn-label {
+    opacity: 1;
+    width: auto;
+  }
+
+  .sidebar-toggle {
+    display: none;
+  }
+}

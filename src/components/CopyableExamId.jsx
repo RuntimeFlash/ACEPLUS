@@ -11,11 +11,14 @@ const CopyableExamId = ({ examId }) => {
     notification.style.bottom = '20px';
     notification.style.left = '50%';
     notification.style.transform = 'translateX(-50%)';
-    notification.style.backgroundColor = '#4CAF50';
-    notification.style.color = 'white';
-    notification.style.padding = '10px 20px';
-    notification.style.borderRadius = '5px';
-    notification.style.zIndex = '1000';
+    notification.style.backgroundColor = 'var(--success)';
+    notification.style.color = 'var(--text-inverse)';
+    notification.style.padding = 'var(--space-3) var(--space-5)';
+    notification.style.borderRadius = 'var(--radius-md)';
+    notification.style.zIndex = 'var(--z-toast)';
+    notification.style.fontFamily = 'var(--font-body)';
+    notification.style.fontWeight = '600';
+    notification.style.fontSize = 'var(--text-sm)';
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 2000);
   };
@@ -25,35 +28,36 @@ const CopyableExamId = ({ examId }) => {
       style={{ 
         display: 'flex',
         alignItems: 'center',
-        gap: '8px'
+        gap: 'var(--space-2)'
       }}
     >
       <motion.div 
         style={{
           cursor: 'pointer',
-          padding: '8px 12px',
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          color: '#ffffff',
-          borderRadius: '8px',
+          padding: 'var(--space-2) var(--space-3)',
+          backgroundColor: 'var(--bg-surface)',
+          color: 'var(--text-primary)',
+          borderRadius: 'var(--radius-md)',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: 'var(--space-2)',
           userSelect: 'all',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          fontSize: '1rem',
-          fontFamily: 'monospace'
+          border: '1px solid var(--border-default)',
+          fontSize: 'var(--text-base)',
+          fontFamily: 'var(--font-mono)',
+          transition: 'all var(--duration-normal) var(--ease-default)'
         }}
         whileHover={{ 
           scale: 1.02,
-          backgroundColor: 'rgba(255, 255, 255, 0.08)',
-          border: '1px solid rgba(255, 255, 255, 0.2)'
+          backgroundColor: 'var(--bg-hover)',
+          border: '1px solid var(--border-focus)'
         }}
         whileTap={{ scale: 0.98 }}
         onClick={handleCopy}
         title="Click to copy exam ID"
       >
         <span>{examId}</span>
-        <FaCopy style={{ fontSize: '0.9rem', opacity: 0.7 }} />
+        <FaCopy style={{ fontSize: 'var(--text-sm)', opacity: 0.7 }} />
       </motion.div>
     </motion.div>
   );

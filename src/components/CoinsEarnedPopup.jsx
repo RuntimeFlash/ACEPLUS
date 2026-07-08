@@ -9,23 +9,25 @@ const PopupOverlay = styled(motion.div)`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--bg-overlay);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: var(--z-modal);
 `;
 
 const PopupContent = styled(motion.div)`
-  background: #1c1c1c;
-  border-radius: 16px;
-  padding: 2.5rem;
+  background: var(--bg-raised);
+  border-radius: var(--radius-xl);
+  padding: var(--space-10);
   width: 90%;
   max-width: 380px;
   text-align: center;
-  border: 1px solid #4a90e2;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-xl);
   position: relative;
+  overflow: hidden;
 `;
 
 const Sparkles = styled.div`
@@ -40,31 +42,34 @@ const Sparkles = styled.div`
 
 const Sparkle = styled(motion.div)`
   position: absolute;
-  background: #fdd835;
+  background: var(--accent);
   border-radius: 50%;
 `;
 
 const Title = styled.h2`
-  color: #4a90e2;
-  margin-bottom: 1.5rem;
-  font-size: 1.8rem;
+  font-family: var(--font-display);
+  color: var(--primary);
+  margin-bottom: var(--space-6);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
 `;
 
 const CoinsDisplay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  color: #fdd835;
-  font-size: 3rem;
-  font-weight: bold;
-  margin-bottom: 2rem;
+  gap: var(--space-4);
+  color: var(--accent);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-bold);
+  font-family: var(--font-display);
+  margin-bottom: var(--space-8);
 `;
 
 const Message = styled.p`
-  color: #e0e0e0;
-  font-size: 1.1rem;
-  line-height: 1.6;
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
 `;
 
 const CoinsEarnedPopup = ({ coins, onClose }) => {

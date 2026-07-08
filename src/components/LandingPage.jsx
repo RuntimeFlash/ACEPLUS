@@ -154,7 +154,7 @@ const LandingPage = () => {
                 whileHover={{
                   scale: 1.05,
                   rotateY: 5,
-                  boxShadow: "0 20px 40px rgba(79, 172, 254, 0.2)"
+                  boxShadow: "0 20px 40px rgba(16, 185, 129, 0.2)"
                 }}
               >
                 <div className="feature-icon">{feature.icon}</div>
@@ -179,7 +179,7 @@ const LandingPage = () => {
       </main>
 
       <footer className="landing-footer">
-        <p>© 2024 AcePlus - Holy Angels School Dombivli</p>
+        <p>© 2025 AcePlus - Holy Angels School Dombivli</p>
         <p>A student initiative for smarter learning</p>
       </footer>
     </div>

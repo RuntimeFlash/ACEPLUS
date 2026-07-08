@@ -8,13 +8,13 @@ const LoaderContainer = styled(motion.div)`
   align-items: center;
   justify-content: center;
   min-height: ${props => props.fullHeight ? '100vh' : '50vh'};
-  background: ${props => props.fullHeight ? 'var(--background-color, #121212)' : 'transparent'};
+  background: ${props => props.fullHeight ? 'var(--bg-base)' : 'transparent'};
   position: ${props => props.fullHeight ? 'fixed' : 'relative'};
   top: ${props => props.fullHeight ? '0' : 'auto'};
   left: ${props => props.fullHeight ? '0' : 'auto'};
   right: ${props => props.fullHeight ? '0' : 'auto'};
   bottom: ${props => props.fullHeight ? '0' : 'auto'};
-  z-index: ${props => props.fullHeight ? '1000' : '1'};
+  z-index: ${props => props.fullHeight ? 'var(--z-overlay)' : 'var(--z-base)'};
   width: 100%;
 `;
 
@@ -22,7 +22,7 @@ const LoaderWrapper = styled(motion.div)`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;,
+  gap: var(--space-8);
 `;
 
 const SpinnerContainer = styled(motion.div)`
@@ -38,11 +38,10 @@ const OuterRing = styled(motion.div)`
   width: 80px;
   height: 80px;
   border: 3px solid transparent;
-  border-top: 3px solid #4CAF50;
-  border-right: 3px solid rgba(76, 175, 80, 0.3);
+  border-top: 3px solid var(--primary);
+  border-right: 3px solid var(--primary-glow);
   border-radius: 50%;
 `;
-
 
 const InnerRing = styled(motion.div)`
   position: absolute;
@@ -51,9 +50,9 @@ const InnerRing = styled(motion.div)`
   width: 60px;
   height: 60px;
   border: 2px solid transparent;
-  border-top: 2px solid #2196F3;
-  border-left: 2px solid rgba(33, 150, 243, 0.3);
-  border-radius: 50%;,
+  border-top: 2px solid var(--primary-hover);
+  border-left: 2px solid var(--primary-glow);
+  border-radius: 50%;
 `;
 
 const CenterDot = styled(motion.div)`
@@ -62,49 +61,50 @@ const CenterDot = styled(motion.div)`
   left: 34px;
   width: 12px;
   height: 12px;
-  background: linear-gradient(135deg, #4CAF50, #2196F3);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   border-radius: 50%;
-  box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+  box-shadow: var(--shadow-glow);
   z-index: 10;
 `;
 
 const LoadingText = styled(motion.div)`
-  color: #ffffff;
-  font-size: 1.2rem;
-  font-weight: 500;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
   text-align: center;
   letter-spacing: 0.5px;
 `;
 
 const ProgressText = styled(motion.div)`
-  color: #a0aec0;
-  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
   text-align: center;
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
 `;
 
 const FloatingDots = styled.div`
   display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 `;
 
 const Dot = styled(motion.div)`
   width: 8px;
   height: 8px;
-  background: linear-gradient(135deg, #4CAF50, #2196F3);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   border-radius: 50%;
 `;
 
-const ElegantLoader = ({ 
-  message = "Loading...", 
-  subMessage = "Please wait", 
+const ElegantLoader = ({
+  message = "Loading...",
+  subMessage = "Please wait",
   progress = null,
-  fullHeight = false 
+  fullHeight = false
 }) => {
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
       transition: {
         duration: 0.3,
@@ -121,12 +121,12 @@ const ElegantLoader = ({
   };
 
   const wrapperVariants = {
-    hidden: { 
+    hidden: {
       opacity: 0,
       y: 20,
       scale: 0.9
     },
-    visible: { 
+    visible: {
       opacity: 1,
       y: 0,
       scale: 1,
@@ -174,8 +174,8 @@ const ElegantLoader = ({
 
   const textVariants = {
     hidden: { opacity: 0, y: 10 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: {
         duration: 0.4,
@@ -197,7 +197,7 @@ const ElegantLoader = ({
   };
 
   return (
-    <LoaderContainer 
+    <LoaderContainer
       fullHeight={fullHeight}
       variants={containerVariants}
       initial="hidden"
@@ -206,15 +206,15 @@ const ElegantLoader = ({
     >
       <LoaderWrapper variants={wrapperVariants}>
         <SpinnerContainer>
-          <OuterRing 
+          <OuterRing
             variants={outerRingVariants}
             animate="animate"
           />
-          <InnerRing 
-            variants={innerRingVariants} 
+          <InnerRing
+            variants={innerRingVariants}
             animate="animate"
           />
-          <CenterDot 
+          <CenterDot
             variants={centerDotVariants}
             animate="animate"
           />

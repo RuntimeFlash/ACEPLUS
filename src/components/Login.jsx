@@ -179,21 +179,15 @@ const Login = () => {
               'Login'
             )}
           </motion.button>
-          <motion.div
-            className="form-group"
+          <motion.p
             variants={itemVariants}
-            style={{ textAlign: 'center', marginTop: '1rem' }}
+            className="extra-link"
           >
-            <p>
-              Don't have an account?{' '}
-              <span
-                onClick={() => navigate('/register')}
-                style={{ color: '#667eea', cursor: 'pointer', textDecoration: 'underline' }}
-              >
-                Register
-              </span>
-            </p>
-          </motion.div>
+            Don't have an account?{' '}
+            <span onClick={() => navigate('/register')}>
+              Register
+            </span>
+          </motion.p>
         </form>
       </motion.div>
     </div>

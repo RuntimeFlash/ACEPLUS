@@ -133,25 +133,25 @@ const UnsubmittedExamPopup = ({ isOpen, onClose, unsubmittedExams = [], onExamDe
 
                     <div className="unsubmitted-exam-details">
                       <div className="detail-row">
-                        <FaBook style={{ marginRight: '0.5rem', color: 'var(--blue-400)' }} />
+                        <FaBook style={{ marginRight: '0.5rem', color: 'var(--info)' }} />
                         <strong>Subject:</strong> <span className="highlight">{exam.subject}</span>
                       </div>
                       <div className="detail-row">
-                        <FaQuestionCircle style={{ marginRight: '0.5rem', color: 'var(--blue-400)' }} />
+                        <FaQuestionCircle style={{ marginRight: '0.5rem', color: 'var(--info)' }} />
                         <strong>Questions:</strong> <span className="highlight">{exam.question_count}</span>
                       </div>
                       <div className="detail-row">
-                        <FaClock style={{ marginRight: '0.5rem', color: 'var(--blue-400)' }} />
+                        <FaClock style={{ marginRight: '0.5rem', color: 'var(--info)' }} />
                         <strong>Created:</strong> <span className="highlight">{formatDate(exam.timestamp)}</span>
                       </div>
                       {exam.test ? (
                         <div className="detail-row">
-                          <FaClipboardList style={{ marginRight: '0.5rem', color: 'var(--blue-400)' }} />
+                          <FaClipboardList style={{ marginRight: '0.5rem', color: 'var(--info)' }} />
                           <strong>Type:</strong> <span className="highlight">Test Exam</span>
                         </div>
                       ) : (
                         <div className="detail-row">
-                          <FaBook style={{ marginRight: '0.5rem', color: 'var(--blue-400)' }} />
+                          <FaBook style={{ marginRight: '0.5rem', color: 'var(--info)' }} />
                           <strong>Lessons:</strong> <span className="highlight">{exam.lessons.join(', ')}</span>
                         </div>
                       )}

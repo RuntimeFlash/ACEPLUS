@@ -9,9 +9,9 @@ const PopupOverlay = styled(motion.div)`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  z-index: 9998;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(8px);
+  z-index: var(--z-overlay);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -23,70 +23,74 @@ const PopupOverlay = styled(motion.div)`
 const PopupContent = styled(motion.div)`
   position: relative;
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  padding: 1.5rem;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-  z-index: 9999;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-raised);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-xl);
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
+  padding: var(--space-6);
+  z-index: var(--z-modal);
+  border-top: 1px solid var(--border-default);
   min-height: 200px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  color: #ffffff;
-  
+  color: var(--text-primary);
+
   .content-container {
     overflow-y: auto;
     flex: 1;
-    padding-bottom: 20px;
+    padding-bottom: var(--space-5);
   }
-  
+
   .drag-handle {
     width: 40px;
     height: 4px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
-    margin: -0.5rem auto 1rem;
+    background: var(--text-muted);
+    border-radius: var(--radius-full);
+    margin: calc(-1 * var(--space-2)) auto var(--space-4);
   }
+
   .popup-title {
     text-align: center;
-    margin: 0 0 1rem;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #fff;
-    padding: 0 2rem; /* Make space for close button */
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    padding: 0 var(--space-8);
   }
 
   .solution-text {
-    color: #f44336;
+    color: var(--error);
   }
 `;
 
 const CloseButton = styled(motion.button)`
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: transparent;
-  border: none;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
   cursor: pointer;
-  padding: 8px;
+  padding: var(--space-2);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.8);
-  z-index: 10000;
+  color: var(--text-secondary);
+  z-index: var(--z-popover);
   -webkit-tap-highlight-color: transparent;
   outline: none;
-  
+  transition: all var(--duration-fast) var(--ease-default);
+
   &:hover {
-    color: #fff;
+    color: var(--text-primary);
+    background: var(--bg-hover);
   }
-  
+
   svg {
     width: 24px;
     height: 24px;
@@ -95,7 +99,7 @@ const CloseButton = styled(motion.button)`
 
 const HeaderContainer = styled.div`
   position: relative;
-  padding-top: 1rem;
+  padding-top: var(--space-4);
 `;
 
 const MobilePopup = ({ isOpen, onClose, children, title }) => {
@@ -116,13 +120,13 @@ const MobilePopup = ({ isOpen, onClose, children, title }) => {
         document.body.style.overflow = '';
       }
     };
-    
+
     // Initial check
     updateOverflow();
-    
+
     // Add resize listener
     window.addEventListener('resize', updateOverflow);
-    
+
     // Cleanup
     return () => {
       document.body.style.overflow = '';
@@ -182,7 +186,7 @@ const MobilePopup = ({ isOpen, onClose, children, title }) => {
                 </motion.h2>
               )}
             </HeaderContainer>
-            <motion.div 
+            <motion.div
               className="content-container"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

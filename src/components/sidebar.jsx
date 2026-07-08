@@ -8,50 +8,62 @@ import {
   RiHistoryLine,
   RiLoopLeftLine,
   RiUser3Line,
-  RiUserSharedLine
+  RiUserSharedLine,
+  RiMenuFoldLine,
+  RiMenuUnfoldLine
 } from 'react-icons/ri';
+import './sidebar.css';
 
-function Sidebar({ isHeaderHidden }) {
+const navItems = [
+  { path: '/home', label: 'Home', icon: RiDashboardLine, matchPaths: ['/', '/home'] },
+  { path: '/create', label: 'Create Exam', icon: RiFileAddLine },
+  { path: '/test-series', label: 'Test Series', icon: RiFileTextLine },
+  { path: '/analyse', label: 'Analyse', icon: RiBarChartLine },
+  { path: '/history', label: 'History', icon: RiHistoryLine },
+  { path: '/replay', label: 'Replay', icon: RiLoopLeftLine },
+  { path: '/profile', label: 'Profile', icon: RiUser3Line },
+  { path: '/friends', label: 'Friends', icon: RiUserSharedLine },
+];
+
+function Sidebar({ isOpen, onToggle, isMobile }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isHomeActive = location.pathname === '/' || location.pathname === '/home';
+  const handleNav = (path) => {
+    navigate(path);
+    // Close sidebar on mobile after navigation
+    if (isMobile && onToggle) {
+      onToggle();
+    }
+  };
 
   return (
-    <div className={`sidebar ${isHeaderHidden ? 'header-hidden' : ''}`}>
-      <button onClick={() => navigate('/home')} className={`btn ${isHomeActive ? 'active' : ''}`}>
-        <RiDashboardLine />
-        <span>Home</span>
+    <aside className={`sidebar ${isOpen ? 'expanded' : ''} ${isMobile && isOpen ? 'mobile-open' : ''}`}>
+      {/* Toggle button — desktop only */}
+      <button className="sidebar-toggle" onClick={onToggle} aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}>
+        {isOpen ? <RiMenuFoldLine /> : <RiMenuUnfoldLine />}
       </button>
-      <button onClick={() => navigate('/create')} className={`btn ${location.pathname === '/create' ? 'active' : ''}`}>
-        <RiFileAddLine />
-        <span>Create Exam</span>
-      </button>
-      <button onClick={() => navigate('/test-series')} className={`btn ${location.pathname === '/test-series' ? 'active' : ''}`}>
-        <RiFileTextLine />
-        <span>Test Series</span>
-      </button>
-      <button onClick={() => navigate('/analyse')} className={`btn ${location.pathname === '/analyse' ? 'active' : ''}`}>
-        <RiBarChartLine />
-        <span>Analyse</span>
-      </button>
-      <button onClick={() => navigate('/history')} className={`btn ${location.pathname === '/history' ? 'active' : ''}`}>
-        <RiHistoryLine />
-        <span>History</span>
-      </button>
-      <button onClick={() => navigate('/replay')} className={`btn ${location.pathname === '/replay' ? 'active' : ''}`}>
-        <RiLoopLeftLine />
-        <span>Replay</span>
-      </button>
-      <button onClick={() => navigate('/profile')} className={`btn ${location.pathname === '/profile' ? 'active' : ''}`}>
-        <RiUser3Line />
-        <span>Profile</span>
-      </button>
-      <button onClick={() => navigate('/friends')} className={`btn ${location.pathname === '/friends' ? 'active' : ''}`}>
-        <RiUserSharedLine />
-        <span>Friends</span>
-      </button>
-    </div>
+
+      <nav className="sidebar-nav">
+        {navItems.map(({ path, label, icon: Icon, matchPaths }) => {
+          const isActive = matchPaths
+            ? matchPaths.includes(location.pathname)
+            : location.pathname === path;
+
+          return (
+            <button
+              key={path}
+              onClick={() => handleNav(path)}
+              className={`sidebar-btn ${isActive ? 'active' : ''}`}
+              title={!isOpen ? label : undefined}
+            >
+              <span className="sidebar-btn-icon"><Icon /></span>
+              <span className="sidebar-btn-label">{label}</span>
+            </button>
+          );
+        })}
+      </nav>
+    </aside>
   );
 }
 

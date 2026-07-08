@@ -1,166 +1,205 @@
+/* ============================================================
+   Friends — Redesigned with Design Tokens
+   ============================================================ */
+
 .friends-container {
-  --friends-panel: #1c1f27;
-  --friends-panel-border: rgba(153, 189, 248, 0.2);
-  --friends-input: #141922;
-  --friends-input-border: rgba(166, 194, 241, 0.22);
-  --friends-muted: #a8b6c7;
-  max-width: 1240px;
+  max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: 2rem;
-  margin-left: 80px;
-  max-width: calc(100% - 80px);
+  padding: var(--space-8);
 }
 
-.sidebar:hover ~ .friends-container {
-  margin-left: 220px;
-  max-width: calc(100% - 220px);
-}
+/* ── Heading ────────────────────────────────────── */
 
 .friends-heading {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
 .friends-title {
   margin: 0;
-  font-size: clamp(1.8rem, 2.5vw, 2.4rem);
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 2.5vw, var(--text-3xl));
+  font-weight: var(--weight-bold);
   letter-spacing: 0.01em;
+  color: var(--text-primary);
 }
 
 .friends-subtitle {
-  margin: 0.36rem 0 0;
-  color: var(--friends-muted);
+  margin: var(--space-1) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
 }
+
+/* ── Stat Pills ─────────────────────────────────── */
 
 .friends-stats {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
 .friends-stat-pill {
-  background: rgba(25, 46, 76, 0.35);
-  border: 1px solid rgba(105, 160, 237, 0.44);
-  border-radius: 12px;
-  padding: 0.42rem 0.62rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
   min-width: 90px;
+  transition: all var(--duration-normal) var(--ease-default);
+}
+
+.friends-stat-pill:hover {
+  border-color: var(--border-default);
 }
 
 .friends-stat-pill span {
   display: block;
-  font-size: 0.72rem;
-  color: #bed2ee;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .friends-stat-pill strong {
-  font-size: 1.04rem;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  font-weight: var(--weight-bold);
 }
+
+/* ── Card ───────────────────────────────────────── */
 
 .friends-card {
-  background:
-    radial-gradient(circle at top right, rgba(70, 111, 181, 0.22), transparent 56%),
-    var(--friends-panel);
-  border: 1px solid var(--friends-panel-border);
-  border-radius: 16px;
-  padding: 1rem;
-  margin-bottom: 1rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-inner);
 }
 
-.card-head {
-  margin-bottom: 0.8rem;
+.friends-card .card-head {
+  margin-bottom: var(--space-3);
 }
 
-.card-head h3 {
+.friends-card .card-head h3 {
   margin: 0;
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
 }
 
 .friends-muted {
-  color: var(--friends-muted);
-  margin: 0.3rem 0 0;
-  font-size: 0.92rem;
+  color: var(--text-muted);
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
 }
+
+/* ── Grid ───────────────────────────────────────── */
 
 .friends-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
+
+/* ── Inputs ─────────────────────────────────────── */
 
 .friends-input-row {
   display: grid;
   grid-template-columns: 1fr auto auto;
-  gap: 0.56rem;
-  margin-bottom: 0.75rem;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .friends-input-row input,
 .friends-form-grid input,
 .friends-form-grid select {
-  background: var(--friends-input);
-  color: #eef4ff;
-  border: 1px solid var(--friends-input-border);
-  border-radius: 10px;
-  padding: 0.62rem 0.72rem;
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  transition: border-color var(--duration-fast) var(--ease-default),
+              box-shadow var(--duration-fast) var(--ease-default);
 }
 
 .friends-input-row input:focus,
 .friends-form-grid input:focus,
 .friends-form-grid select:focus {
-  border-color: rgba(114, 179, 255, 0.85);
-  box-shadow: 0 0 0 3px rgba(58, 124, 205, 0.24);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
   outline: none;
 }
 
+.friends-input-row input::placeholder,
+.friends-form-grid input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── Buttons ────────────────────────────────────── */
+
 .friends-card button {
-  border: 1px solid rgba(166, 200, 252, 0.28);
-  background: rgba(27, 41, 59, 0.8);
-  color: #e7f3ff;
-  border-radius: 10px;
-  padding: 0.48rem 0.7rem;
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
   cursor: pointer;
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  transition: all var(--duration-normal) var(--ease-default);
 }
 
 .friends-card button:hover {
-  background: rgba(51, 83, 122, 0.82);
+  background: var(--bg-hover);
+  border-color: var(--border-focus);
 }
 
 .friends-card button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .friends-card button.danger {
-  border-color: rgba(255, 132, 132, 0.48);
-  color: #ff9e9e;
-  background: rgba(73, 26, 32, 0.52);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: var(--error);
+  background: var(--error-soft);
 }
+
+.friends-card button.danger:hover {
+  background: rgba(248, 113, 113, 0.2);
+}
+
+/* ── Friend Code ────────────────────────────────── */
 
 .friend-code-row {
   display: flex;
-  gap: 0.8rem;
+  gap: var(--space-3);
   align-items: center;
 }
 
 .friend-code-row code {
-  background: rgba(13, 22, 33, 0.8);
-  border: 1px solid rgba(166, 200, 252, 0.22);
-  padding: 0.4rem 0.56rem;
-  border-radius: 8px;
-  font-size: 0.95rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--primary);
 }
+
+/* ── Search/Result Rows ─────────────────────────── */
 
 .search-results,
 .list-stack {
   display: grid;
-  gap: 0.55rem;
+  gap: var(--space-2);
 }
 
 .result-row,
@@ -170,41 +209,68 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.7rem;
-  background: rgba(10, 18, 28, 0.74);
-  border: 1px solid rgba(158, 189, 238, 0.17);
-  border-radius: 11px;
-  padding: 0.64rem;
+  gap: var(--space-3);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  transition: background var(--duration-fast) var(--ease-default);
+}
+
+.result-row:hover,
+.request-row:hover,
+.friend-row:hover,
+.nudge-row:hover {
+  background: var(--bg-hover);
+}
+
+.result-row strong,
+.friend-row strong,
+.nudge-row strong {
+  color: var(--text-primary);
+  font-size: var(--text-sm);
 }
 
 .result-row p,
 .friend-row p,
 .nudge-row p {
-  margin: 0.2rem 0 0;
-  color: #cfdeef;
+  margin: var(--space-1) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
 }
 
 .row-actions {
   display: flex;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 
 .subsection-title {
-  margin: 0.9rem 0 0.42rem;
-  font-size: 0.96rem;
+  margin: var(--space-4) 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
 }
+
+/* ── Metric Switch (Leaderboard Tabs) ───────────── */
 
 .metric-switch {
   display: flex;
-  gap: 0.44rem;
-  margin-bottom: 0.7rem;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.metric-switch button {
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
 }
 
 .metric-switch button.active {
-  border-color: rgba(111, 180, 255, 0.9);
-  color: #9ad0ff;
-  background: rgba(49, 93, 153, 0.42);
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
 }
+
+/* ── Leaderboard Table ──────────────────────────── */
 
 .leaderboard-table {
   width: 100%;
@@ -213,76 +279,106 @@
 
 .leaderboard-table th,
 .leaderboard-table td {
-  padding: 0.58rem;
+  padding: var(--space-3);
   text-align: left;
-  border-bottom: 1px solid rgba(156, 189, 241, 0.2);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: var(--text-sm);
 }
 
 .leaderboard-table th {
-  color: #bcd4f1;
-  font-size: 0.84rem;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  font-weight: var(--weight-medium);
+}
+
+.leaderboard-table td {
+  color: var(--text-primary);
 }
 
 .table-empty {
-  color: var(--friends-muted);
+  color: var(--text-muted);
 }
+
+/* ── Form Grid ──────────────────────────────────── */
 
 .friends-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.56rem;
-  margin-bottom: 0.72rem;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .member-selector {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.52rem 0.8rem;
-  margin-bottom: 0.72rem;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .member-selector label {
   display: inline-flex;
   align-items: center;
-  gap: 0.34rem;
-  background: rgba(12, 20, 30, 0.66);
-  border: 1px solid rgba(153, 184, 235, 0.22);
-  border-radius: 999px;
-  padding: 0.28rem 0.56rem;
-  font-size: 0.85rem;
+  gap: var(--space-1);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-default);
 }
 
+.member-selector label:hover {
+  border-color: var(--border-default);
+  background: var(--bg-hover);
+}
+
+/* ── Mini Card ──────────────────────────────────── */
+
 .mini-card {
-  background: rgba(12, 20, 30, 0.76);
-  border: 1px solid rgba(156, 190, 243, 0.2);
-  border-radius: 10px;
-  padding: 0.58rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
   display: grid;
-  gap: 0.18rem;
+  gap: var(--space-1);
+}
+
+.mini-card strong {
+  color: var(--text-primary);
+  font-size: var(--text-sm);
 }
 
 .mini-card p {
-  margin: 0.15rem 0;
-  color: #cadbee;
+  margin: var(--space-1) 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
 }
 
 .mini-card small {
-  color: #a8bbd2;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
 }
 
+/* ── Nudges ─────────────────────────────────────── */
+
 .nudge-row.read {
-  opacity: 0.72;
+  opacity: 0.6;
 }
 
 .nudge-row.unread {
-  border-color: rgba(108, 178, 255, 0.46);
+  border-color: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
 }
 
 .nudges-card {
-  margin-bottom: 70px;
+  margin-bottom: var(--space-16);
 }
+
+/* ── Responsive ─────────────────────────────────── */
 
 @media (max-width: 980px) {
   .friends-heading {
@@ -296,12 +392,9 @@
 }
 
 @media (max-width: 768px) {
-  .friends-container,
-  .sidebar:hover ~ .friends-container {
-    margin-left: 0;
-    max-width: 100%;
-    padding: 1rem;
-    margin-bottom: 70px;
+  .friends-container {
+    padding: var(--space-4);
+    margin-bottom: var(--space-16);
   }
 
   .friends-input-row {

@@ -27,6 +27,7 @@ import MistakeReplay from "./components/MistakeReplay";
 import Profile from "./components/Profile";
 import Friends from "./components/Friends";
 
+import "./design-tokens.css";
 import "./App.css";
 
 const ScrollToTop = () => {
@@ -49,6 +50,26 @@ function App() {
   const [refreshCoins, setRefreshCoins] = useState(false);
   const location = useLocation();
 
+  // Sidebar toggle state
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 768);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+
+  // Track window resize for mobile detection
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const toggleSidebar = () => setSidebarOpen(prev => !prev);
+
+  // PWA install logic
   const [isAndroid] = useState(() => /Android/i.test(navigator.userAgent));
   const [isInstalled, setIsInstalled] = useState(() => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
@@ -61,27 +82,21 @@ function App() {
   const [downloadFinished, setDownloadFinished] = useState(false);
 
   useEffect(() => {
-    // Function to check if the app is running as an installed PWA
     const checkInstallation = () => {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
       const isIOSStandalone = window.navigator.standalone === true; 
       setIsInstalled(isStandalone || isIOSStandalone);
     };
 
-    // Listen for changes (in case they install it while the tab is open)
     const mediaQuery = window.matchMedia('(display-mode: standalone)');
     mediaQuery.addEventListener('change', checkInstallation);
 
-    // Listen for beforeinstallprompt event
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
     };
 
-    // Listen for successful installation
     const handleAppInstalled = () => {
-      // Do NOT set isInstalled to true here so that the browser tab remains blocked,
-      // forcing the user to close Chrome and open the newly installed standalone app.
       setDeferredPrompt(null);
     };
 
@@ -100,8 +115,8 @@ function App() {
     setDownloadProgress(0);
     setDownloadFinished(false);
 
-    const duration = 20000; // 20 seconds
-    const intervalTime = 100; // Update every 100ms
+    const duration = 20000;
+    const intervalTime = 100;
     const totalSteps = duration / intervalTime;
     let currentStep = 0;
 
@@ -140,7 +155,7 @@ function App() {
 
   const handleTaskCompletion = (tasks) => {
     setCompletedTasks(tasks);
-    setRefreshCoins(true); // Trigger coin refresh
+    setRefreshCoins(true);
   };
 
   const updateAuthState = () => {
@@ -228,129 +243,162 @@ function App() {
 
   const showHeader = location.pathname !== '/';
 
+  // Determine content class based on auth and sidebar state
+  const getContentClass = () => {
+    if (!isAuthenticated) return 'no-sidebar';
+    if (isMobile) return 'sidebar-collapsed'; // On mobile, content never shifts
+    return sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed';
+  };
+
   return (
     <div className={`App ${isHeaderVisible ? "" : "header-hidden"}`}>
-      {showHeader && <Header onVisibilityChange={setIsHeaderVisible} completedTasks={completedTasks} />}
-      {isAuthenticated && <Sidebar isHeaderHidden={!isHeaderVisible} />}
-      
-      <Routes>
-        <Route
-          path="/"
-          element={isAuthenticated ? <Navigate to="/home" /> : <LandingPage />}
+      {showHeader && (
+        <Header
+          onVisibilityChange={setIsHeaderVisible}
+          completedTasks={completedTasks}
+          onToggleSidebar={toggleSidebar}
+          isMobile={isMobile}
         />
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute updateAuthState={updateAuthState}>
-              <Content updateAuthState={updateAuthState} />
-              <ScrollToTop />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/login"
-          element={isAuthenticated ? <Navigate to="/home" /> : <Login />}
-        />
-        <Route
-          path="/register"
-          element={isAuthenticated ? <Navigate to="/home" /> : <Register />}
-        />
-        <Route
-          path="/create"
-          element={
-            <ProtectedRoute updateAuthState={updateAuthState}>
-              <Exam />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/analyse"
-          element={
-            <ProtectedRoute updateAuthState={updateAuthState}>
-              <Analysis />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/analyse/:subject"
-          element={
-            <ProtectedRoute updateAuthState={updateAuthState}>
-              <SubjectDetails />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/history"
-          element={
-            <ProtectedRoute updateAuthState={updateAuthState}>
-              <History />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/replay"
-          element={
-            <ProtectedRoute updateAuthState={updateAuthState}>
-              <MistakeReplay />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute updateAuthState={updateAuthState}>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/friends"
-          element={
-            <ProtectedRoute updateAuthState={updateAuthState}>
-              <Friends />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/exam/g/:id"
-          element={
-            <ProtectedRoute updateAuthState={updateAuthState}>
-              <ExamTaking />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/exam/:id"
-          element={
-            <ProtectedRoute updateAuthState={updateAuthState}>
-              <ExamLegacyRedirect />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/test-series"
-          element={
-            <ProtectedRoute updateAuthState={updateAuthState}>
-              <TestSeries />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/create-test"
-          element={
-            <ProtectedRoute updateAuthState={updateAuthState}>
-              <CreateTest />
-            </ProtectedRoute>
-          }
-        />
-        {/* Catch-all route */}
-        <Route
-          path="*"
-          element={isAuthenticated ? <NotFound /> : <Navigate to="/login" />}
-        />
-      </Routes>
+      )}
 
-      {isAuthenticated && window.innerWidth <= 768 && <BottomNav />}
+      <div className="app-layout">
+        {isAuthenticated && (
+          <Sidebar
+            isOpen={sidebarOpen}
+            onToggle={toggleSidebar}
+            isMobile={isMobile}
+          />
+        )}
+
+        {/* Mobile sidebar overlay */}
+        {isMobile && (
+          <div
+            className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`}
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        <main className={`app-content ${getContentClass()}`}>
+          <Routes>
+            <Route
+              path="/"
+              element={isAuthenticated ? <Navigate to="/home" /> : <LandingPage />}
+            />
+            <Route
+              path="/home"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <Content updateAuthState={updateAuthState} />
+                  <ScrollToTop />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/login"
+              element={isAuthenticated ? <Navigate to="/home" /> : <Login />}
+            />
+            <Route
+              path="/register"
+              element={isAuthenticated ? <Navigate to="/home" /> : <Register />}
+            />
+            <Route
+              path="/create"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <Exam />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analyse"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <Analysis />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analyse/:subject"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <SubjectDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <History />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/replay"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <MistakeReplay />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/friends"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <Friends />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/exam/g/:id"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <ExamTaking />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/exam/:id"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <ExamLegacyRedirect />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/test-series"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <TestSeries />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/create-test"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <CreateTest />
+                </ProtectedRoute>
+              }
+            />
+            {/* Catch-all route */}
+            <Route
+              path="*"
+              element={isAuthenticated ? <NotFound /> : <Navigate to="/login" />}
+            />
+          </Routes>
+        </main>
+      </div>
+
+      {isAuthenticated && isMobile && <BottomNav />}
     </div>
   );
 }

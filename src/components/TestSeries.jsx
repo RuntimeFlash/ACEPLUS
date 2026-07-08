@@ -2,56 +2,87 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { Skeleton } from '@mui/material';
 import CreatableSelect from 'react-select/creatable';
 import { api } from '../utils/api';
 import ElegantLoader from './ElegantLoader';
+import './TestSeries.css';
 
 const TestCard = styled(motion.div)`
-  background: ${props => props.bgColor};
-  border-radius: 15px;
-  padding: 2rem;
-  color: white;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  background: var(--bg-raised);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  color: var(--text-primary);
+  margin-bottom: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-subtle);
+  transition: transform var(--duration-normal) var(--ease-default),
+              box-shadow var(--duration-normal) var(--ease-default);
   cursor: pointer;
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-  }
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: ${props => props.$gradient || 'var(--primary)'};
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-default);
+  }
 `;
 
 const TestInfo = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
+  }
+
+  .test-id {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    font-family: var(--font-mono);
+  }
 `;
 
 const TestDetails = styled.div`
-  margin-top: 1rem;
+  margin-top: var(--space-4);
   display: flex;
-  gap: 1rem;
+  gap: var(--space-3);
   flex-wrap: wrap;
 `;
 
 const TestDescription = styled.p`
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.5;
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
 `;
 
 const Badge = styled.span`
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
+  background: var(--bg-surface);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
+  border: 1px solid var(--border-subtle);
 `;
 
 const SkeletonWrapper = styled(motion.div)`
@@ -65,7 +96,7 @@ const SkeletonWrapper = styled(motion.div)`
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--background-color, #121212);
+  background: var(--bg-base);
 `;
 
 const EmptyStateWrapper = styled(motion.div)`
@@ -75,179 +106,230 @@ const EmptyStateWrapper = styled(motion.div)`
   justify-content: center;
   min-height: 50vh;
   text-align: center;
-  padding: 2rem;
+  padding: var(--space-8);
 `;
 
 const EmptyStateIcon = styled(motion.div)`
-  font-size: 5rem;
-  margin-bottom: 1.5rem;
+  font-size: var(--text-4xl);
+  margin-bottom: var(--space-6);
 `;
 
 const EmptyStateTitle = styled(motion.h2)`
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  color: #2d3748;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-4);
+  color: var(--text-primary);
 `;
 
 const EmptyStateText = styled(motion.p)`
-  font-size: 1.1rem;
-  color: #718096;
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
   max-width: 500px;
-  line-height: 1.6;
+  line-height: var(--leading-relaxed);
 `;
 
 const TeacherForm = styled(motion.div)`
-  background: #1a1a1a;
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  margin-bottom: 2rem;
+  background: var(--bg-raised);
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--space-8);
   position: relative;
-  z-index: 100;
+  z-index: var(--z-dropdown);
+  border: 1px solid var(--border-subtle);
+
   h2 {
-    color: #ffffff;
-    margin-bottom: 1.5rem;
+    font-family: var(--font-display);
+    color: var(--text-primary);
+    margin-bottom: var(--space-6);
+    font-size: var(--text-xl);
   }
 `;
 
 const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-5);
 
   label {
     display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #e2e8f0;
+    margin-bottom: var(--space-2);
+    font-weight: var(--weight-semibold);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
   }
 
   select {
     width: 100px;
-    padding: 0.75rem;
-    border: 1px solid #2d3748;
-    border-radius: 8px;
-    background-color: #2d3748;
-    color: #ffffff;
-    font-size: 1rem;
+    padding: var(--space-3);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: var(--text-base);
     cursor: ${props => props.isDisabled ? 'not-allowed' : 'pointer'};
+    transition: border-color var(--duration-fast) var(--ease-default);
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
     &:disabled {
-      background-color: #1a1a1a;
-      border-color: #2d3748;
-      color: #718096;
+      background-color: var(--bg-base);
+      border-color: var(--border-subtle);
+      color: var(--text-muted);
       cursor: not-allowed;
     }
+
     option {
-      background-color: #2d3748;
-      color: #ffffff;
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
     }
   }
 
   .react-select-container {
     .react-select__control {
-      background-color: #2d3748;
-      border-color: #4a5568;
+      background-color: var(--bg-surface);
+      border-color: var(--border-default);
       position: relative;
       z-index: 101;
       &:hover {
-        border-color: #4a5568;
+        border-color: var(--border-default);
       }
     }
 
     .react-select__menu {
-      background-color: #2d3748;
-      border: 1px solid #4a5568;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-default);
       z-index: 102;
     }
 
     .react-select__option {
-      background-color: #2d3748;
-      color: #ffffff;
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
       &:hover {
-        background-color: #4a5568;
+        background-color: var(--bg-hover);
       }
     }
+
     .react-select__multi-value {
-      background-color: #4a5568;
+      background-color: var(--bg-hover);
+      border-radius: var(--radius-sm);
 
       .react-select__multi-value__label {
-        color: #ffffff;
+        color: var(--text-primary);
       }
 
       .react-select__multi-value__remove {
-        color: #ffffff;
+        color: var(--text-primary);
         &:hover {
-          background-color: #e53e3e;
-          color: #ffffff;
+          background-color: var(--error);
+          color: var(--text-primary);
         }
       }
     }
 
     .react-select__input-container {
-      color: #ffffff;
+      color: var(--text-primary);
     }
 
     .react-select__placeholder {
-      color: #a0aec0;
+      color: var(--text-muted);
     }
   }
 `;
 
-
 const DisabledInput = styled.input`
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #2d3748;
-  border-radius: 8px;
-  background-color: #1a1a1a;
-  color: #718096;
-  font-size: 1rem;
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-base);
+  color: var(--text-muted);
+  font-size: var(--text-base);
   cursor: not-allowed;
 `;
 
 const Input = styled.input`
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #2d3748;
-  border-radius: 8px;
-  background-color: #2d3748;
-  color: #ffffff;
-  font-size: 1rem;
+  padding: var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  transition: border-color var(--duration-fast) var(--ease-default),
+              box-shadow var(--duration-fast) var(--ease-default);
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+  }
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
 `;
 
 const GenerateButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background-color: #4CAF50;
-  color: white;
+  padding: var(--space-3) var(--space-6);
+  background-color: var(--primary);
+  color: var(--text-inverse);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
   width: 100%;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: background-color 0.2s ease;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  transition: all var(--duration-normal) var(--ease-default);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+
   &:disabled {
-    background-color: #2d3748;
-    opacity: 0.7; 
+    background-color: var(--bg-surface);
+    color: var(--text-muted);
+    opacity: 0.7;
+    box-shadow: none;
   }
+
   &:hover:not(:disabled) {
-    background-color: #3d8b40;
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
   }
 `;
 
 const PageHeader = styled(motion.div)`
-  margin-bottom: 2rem;
-  padding-top: 1.5rem;
+  margin-bottom: var(--space-8);
+  padding-top: var(--space-6);
   text-align: center;
+
   h1 {
-    font-weight: 700;
-    font-size: 2.2rem;
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-3xl);
     letter-spacing: -0.5px;
-    color: #ffffff;
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
-    background: linear-gradient(135deg, #ffffff 0%, #b3b3b3 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
+    margin-bottom: var(--space-6);
   }
+`;
+
+const LessonTag = styled(motion.span)`
+  display: inline-block;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  margin: var(--space-1);
+  border: 1px solid var(--border-subtle);
+`;
+
+const LessonsList = styled.div`
+  margin-top: var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
 `;
 
 function TestSeries() {
@@ -270,30 +352,30 @@ function TestSeries() {
   const [testName, setTestName] = useState("");
   const [showSubjectWarning, setShowSubjectWarning] = useState(false);
 
-  const getSubjectColor = (subject) => {
-    const colors = {
-      Math: '#4CAF50', 
-      Science: '#2196F3', 
-      English: '#FFC107', 
-      SS: '#9C27B0'
-    }; 
-    return colors[subject] || '#8B4513'; // Brown for custom subjects
+  const getSubjectGradient = (subject) => {
+    const gradients = {
+      Math: 'var(--gradient-math)',
+      Science: 'var(--gradient-science)',
+      English: 'var(--gradient-english)',
+      SS: 'var(--gradient-ss)'
+    };
+    return gradients[subject] || 'linear-gradient(135deg, var(--primary), var(--primary-hover))';
   };
 
   const getSubjectIcon = (subject) => {
-    const icons = { 
-      Math: '📐', 
-      Science: '🧪', 
-      English: '📚', 
-      SS: '🌍' 
-    }; 
+    const icons = {
+      Math: '📐',
+      Science: '🧪',
+      English: '📚',
+      SS: '🌍'
+    };
     return icons[subject] || '📚';
   };
 
   useEffect(() => {
     const fetchTests = async () => {
       try {
-        const data = await api.getTests();  
+        const data = await api.getTests();
         setTests(data.tests);
         setIsTeacher(data.teacher);
 
@@ -305,11 +387,11 @@ function TestSeries() {
             setTeacherStandard(data.teacher_standard);
             setSelectedStandard(data.teacher_standard[0]);
           }
-        } 
+        }
       } catch (error) {
-        console.error('Error fetching tests:', error); 
+        console.error('Error fetching tests:', error);
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     };
 
@@ -338,7 +420,7 @@ function TestSeries() {
   const handleGenerateTest = async (e) => {
     e.preventDefault();
     setShowSkeletonLoading(true);
-    
+
     try {
       const testData = {
         subject: customSubject,
@@ -348,7 +430,7 @@ function TestSeries() {
         test_name: testName,
       };
 
-      navigate('/create-test', { state: { generatedTest: testData } }); 
+      navigate('/create-test', { state: { generatedTest: testData } });
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -357,15 +439,15 @@ function TestSeries() {
   };
 
   const cardVariants = {
-    hidden: { 
-      opacity: 0, 
-      scale: 0.8, 
+    hidden: {
+      opacity: 0,
+      scale: 0.8,
       y: 50,
-      rotateX: -15 
+      rotateX: -15
     },
     visible: (index) => ({
-      opacity: 1, 
-      scale: 1, 
+      opacity: 1,
+      scale: 1,
       y: 0,
       rotateX: 0,
       transition: {
@@ -375,7 +457,7 @@ function TestSeries() {
         stiffness: 100,
         damping: 15
       }
-    }), 
+    }),
     hover: {
       scale: 1.03,
       rotateX: 5,
@@ -441,7 +523,7 @@ function TestSeries() {
 
       clearInterval(progressInterval.current);
       setProgress(100);
-      
+
       setTimeout(() => {
         const examId = examResponse['exam-id'];
         const createdExam = examResponse.exam;
@@ -463,15 +545,15 @@ function TestSeries() {
       transition={{ duration: 0.8, ease: "easeOut" }}
       className="test-series-container"
     >
-      <AnimatePresence mode="wait">    
+      <AnimatePresence mode="wait">
         {showSkeletonLoading ? (
           <SkeletonWrapper
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <ElegantLoader 
-              message="Preparing Your Test..." 
+            <ElegantLoader
+              message="Preparing Your Test..."
               subMessage="Setting up questions and generating content"
               progress={progress}
               fullHeight={true}
@@ -510,7 +592,7 @@ function TestSeries() {
                       }}
                     />
                     {showSubjectWarning && (
-                      <p style={{ color: '#FFC107', fontSize: '0.8rem', marginTop: '0.5rem' }}>
+                      <p style={{ color: 'var(--warning)', fontSize: 'var(--text-xs)', marginTop: 'var(--space-2)' }}>
                         Changing the subject will require you to manually create all questions.
                       </p>
                     )}
@@ -562,14 +644,14 @@ function TestSeries() {
                       className="react-select-container"
                       classNamePrefix="react-select"
                       styles={{
-                        control: (base) => ({ ...base, background: '#2d3748', borderColor: '#4a5568', '&:hover': { borderColor: '#4a5568' } }),
-                        menu: (base) => ({ ...base, background: '#2d3748', border: '1px solid #4a5568' }),
-                        option: (base, state) => ({ ...base, background: state.isFocused ? '#4a5568' : '#2d3748', color: '#ffffff', cursor: 'pointer' }),
-                        multiValue: (base) => ({ ...base, background: '#4a5568' }),
-                        multiValueLabel: (base) => ({ ...base, color: '#ffffff' }),
-                        multiValueRemove: (base) => ({ ...base, color: '#ffffff', ':hover': { background: '#e53e3e', color: '#ffffff' } }),
-                        input: (base) => ({ ...base, color: '#ffffff' }),
-                        placeholder: (base) => ({ ...base, color: '#a0aec0' }),
+                        control: (base) => ({ ...base, background: 'var(--bg-surface)', borderColor: 'var(--border-default)', '&:hover': { borderColor: 'var(--border-default)' } }),
+                        menu: (base) => ({ ...base, background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }),
+                        option: (base, state) => ({ ...base, background: state.isFocused ? 'var(--bg-hover)' : 'var(--bg-surface)', color: 'var(--text-primary)', cursor: 'pointer' }),
+                        multiValue: (base) => ({ ...base, background: 'var(--bg-hover)' }),
+                        multiValueLabel: (base) => ({ ...base, color: 'var(--text-primary)' }),
+                        multiValueRemove: (base) => ({ ...base, color: 'var(--text-primary)', ':hover': { background: 'var(--error)', color: 'var(--text-primary)' } }),
+                        input: (base) => ({ ...base, color: 'var(--text-primary)' }),
+                        placeholder: (base) => ({ ...base, color: 'var(--text-muted)' }),
                       }}
                     />
                   </FormGroup>
@@ -588,15 +670,15 @@ function TestSeries() {
               className="tests-grid"
             >
               {isLoading ? (
-                <ElegantLoader 
-                  message="Loading Tests..." 
+                <ElegantLoader
+                  message="Loading Tests..."
                   subMessage="Fetching your test series"
                 />
               ) : tests.length === 0 ? (
                 <EmptyStateWrapper
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ 
+                  transition={{
                     duration: 0.8,
                     type: "spring",
                     stiffness: 100,
@@ -606,7 +688,7 @@ function TestSeries() {
                   <EmptyStateIcon
                     initial={{ scale: 0, rotate: -180 }}
                     animate={{ scale: 1, rotate: 0 }}
-                    transition={{ 
+                    transition={{
                       duration: 0.8,
                       delay: 0.2,
                       type: "spring",
@@ -634,7 +716,7 @@ function TestSeries() {
                 tests.map((test, index) => (
                   <TestCard
                     key={test['test-id']}
-                    bgColor={getSubjectColor(test.subject)}
+                    $gradient={getSubjectGradient(test.subject)}
                     variants={cardVariants}
                     initial="hidden"
                     animate="visible"
@@ -647,7 +729,7 @@ function TestSeries() {
                       <h2>{test.test_name || `${getSubjectIcon(test.subject)} ${test.subject}`}</h2>
                       <span className="test-id">#{test['test-id']}</span>
                     </TestInfo>
-                    
+
                     <TestDetails>
                       <Badge>
                         <span>📝</span>
@@ -672,11 +754,10 @@ function TestSeries() {
                     )}
 
                     {test.lessons.length > 0 && (
-                      <div className="lessons-list">
+                      <LessonsList>
                         {test.lessons.map((lesson, idx) => (
-                          <motion.span
+                          <LessonTag
                             key={idx}
-                            className="lesson-tag"
                             initial={{ opacity: 0, scale: 0.8, x: -20 }}
                             animate={{ opacity: 1, scale: 1, x: 0 }}
                             transition={{
@@ -687,9 +768,9 @@ function TestSeries() {
                             }}
                           >
                             {lesson}
-                          </motion.span>
+                          </LessonTag>
                         ))}
-                      </div>
+                      </LessonsList>
                     )}
                   </TestCard>
                 ))

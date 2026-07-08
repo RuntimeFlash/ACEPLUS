@@ -113,20 +113,8 @@ const TestAnalysis = () => {
     datasets: [{
       label: 'Average Score',
       data: Object.values(class_stats).map(stat => stat.average_score),
-      backgroundColor: [
-        '#4CAF50',
-        '#2196F3',
-        '#FFC107',
-        '#9C27B0',
-        '#FF5722'
-      ],
-      borderColor: [
-        '#4CAF50',
-        '#2196F3',
-        '#FFC107',
-        '#9C27B0',
-        '#FF5722'
-      ],
+      backgroundColor: ['var(--color-math)', 'var(--color-science)', 'var(--color-english)', 'var(--color-ss)', 'var(--primary)'],
+      borderColor: ['var(--color-math)', 'var(--color-science)', 'var(--color-english)', 'var(--color-ss)', 'var(--primary)'],
       borderWidth: 1,
     }],
   };
@@ -138,20 +126,20 @@ const TestAnalysis = () => {
       legend: {
         position: 'top',
         labels: {
-          color: '#ffffff'
+          color: 'var(--text-primary)'
         }
       },
       title: {
         display: true,
         text: 'Class-wise Average Scores',
-        color: '#ffffff'
+        color: 'var(--text-primary)'
       },
     },
     scales: {
       y: {
         beginAtZero: true,
         ticks: {
-          color: '#ffffff'
+          color: 'var(--text-primary)'
         },
         grid: {
           color: '#2d3748'
@@ -159,7 +147,7 @@ const TestAnalysis = () => {
       },
       x: {
         ticks: {
-          color: '#ffffff'
+          color: 'var(--text-primary)'
         },
         grid: {
           color: '#2d3748'
@@ -173,8 +161,8 @@ const TestAnalysis = () => {
     labels: ['Participated', 'Did Not Participate'],
     datasets: [{
       data: [overall_stats.total_participants, overall_stats.total_non_participants],
-      backgroundColor: ['#4CAF50', '#ff6b6b'],
-      borderColor: ['#4CAF50', '#ff6b6b'],
+      backgroundColor: ['var(--success)', 'var(--error)'],
+      borderColor: ['var(--success)', 'var(--error)'],
       borderWidth: 1,
     }],
   };
@@ -186,13 +174,13 @@ const TestAnalysis = () => {
       legend: {
         position: 'bottom',
         labels: {
-          color: '#ffffff'
+          color: 'var(--text-primary)'
         }
       },
       title: {
         display: true,
         text: 'Student Participation',
-        color: '#ffffff'
+        color: 'var(--text-primary)'
       },
     },
   };
@@ -215,8 +203,8 @@ const TestAnalysis = () => {
     datasets: [{
       label: 'Number of Students',
       data: scoreDistribution,
-      backgroundColor: '#2196F3',
-      borderColor: '#2196F3',
+      backgroundColor: 'var(--color-ss)',
+      borderColor: 'var(--color-ss)',
       borderWidth: 1,
     }],
   };
@@ -229,20 +217,20 @@ const TestAnalysis = () => {
       legend: {
         position: 'top',
         labels: {
-          color: '#ffffff'
+          color: 'var(--text-primary)'
         }
       },
       title: {
         display: true,
         text: 'Score Distribution (%)',
-        color: '#ffffff'
+        color: 'var(--text-primary)'
       },
     },
     scales: {
       y: {
         beginAtZero: true,
         ticks: {
-          color: '#ffffff'
+          color: 'var(--text-primary)'
         },
         grid: {
           color: '#2d3748'
@@ -250,7 +238,7 @@ const TestAnalysis = () => {
       },
       x: {
         ticks: {
-          color: '#ffffff'
+          color: 'var(--text-primary)'
         },
         grid: {
           color: '#2d3748'
@@ -446,14 +434,14 @@ const TestAnalysis = () => {
             return (
               <motion.div
                 key={division}
-                style={{ backgroundColor: getDivisionColor(division), color: '#ffffff' }}
+                style={{ background: getDivisionColor(division), color: 'var(--text-primary)' }}
                 className="division-card"
                 onClick={() => setCurrentView(`division${division}`)}
                 whileHover={{ y: -5, boxShadow: '0 10px 20px rgba(0,0,0,0.3)' }}
                 whileTap={{ scale: 0.98 }}
               >
                 <div className="division-card-header">
-                  <h3 style={{ color: '#ffffff' }}>Division {division}</h3>
+                  <h3 style={{ color: 'var(--text-primary)' }}>Division {division}</h3>
                 </div>
                 {divisionStats ? (
                   <div className="division-card-stats">

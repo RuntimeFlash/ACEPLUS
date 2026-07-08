@@ -1,0 +1,450 @@
+/* ============================================================
+   AcePlus Design Tokens
+   Single source of truth for the visual system.
+   ============================================================ */
+
+:root {
+  /* ── Color Palette ─────────────────────────────────────── */
+
+  /* Backgrounds — cool-dark with subtle blue undertone */
+  --bg-base:    #0C0C12;
+  --bg-raised:  #14141F;
+  --bg-surface: #1C1C2A;
+  --bg-hover:   #24243A;
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Borders */
+  --border-subtle:  rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-focus:   rgba(16, 185, 129, 0.5);
+
+  /* Primary — Emerald Green */
+  --primary:       #10B981;
+  --primary-hover: #2DD4A0;
+  --primary-muted: #065F46;
+  --primary-glow:  rgba(16, 185, 129, 0.15);
+  --primary-soft:  rgba(16, 185, 129, 0.08);
+
+  /* Accent — Warm Amber (coins, streaks, achievements) */
+  --accent:      #F5A623;
+  --accent-hover: #FBBD3C;
+  --accent-soft: rgba(245, 166, 35, 0.12);
+
+  /* Semantic */
+  --success:      #4ADE80;
+  --success-soft: rgba(74, 222, 128, 0.12);
+  --error:        #F87171;
+  --error-soft:   rgba(248, 113, 113, 0.12);
+  --warning:      #FBBF24;
+  --warning-soft: rgba(251, 191, 36, 0.12);
+  --info:         #60A5FA;
+  --info-soft:    rgba(96, 165, 250, 0.12);
+
+  /* Subject Gradients */
+  --gradient-math:    linear-gradient(135deg, #8B5CF6, #7C3AED);
+  --gradient-science: linear-gradient(135deg, #F43F5E, #E11D48);
+  --gradient-ss:      linear-gradient(135deg, #06B6D4, #0891B2);
+  --gradient-english: linear-gradient(135deg, #F59E0B, #D97706);
+
+  /* Subject Solid Colors */
+  --color-math:    #8B5CF6;
+  --color-science: #F43F5E;
+  --color-ss:      #06B6D4;
+  --color-english: #F59E0B;
+
+  /* Text */
+  --text-primary:   #EAEAF0;
+  --text-secondary: #8888A0;
+  --text-muted:     #555568;
+  --text-inverse:   #0C0C12;
+
+  /* ── Typography ────────────────────────────────────────── */
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body:    'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  --text-xs:   0.75rem;    /* 12px */
+  --text-sm:   0.875rem;   /* 14px */
+  --text-base: 1rem;       /* 16px */
+  --text-lg:   1.125rem;   /* 18px */
+  --text-xl:   1.25rem;    /* 20px */
+  --text-2xl:  1.5rem;     /* 24px */
+  --text-3xl:  2rem;       /* 32px */
+  --text-4xl:  2.5rem;     /* 40px */
+
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  --leading-tight:  1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  /* ── Spacing ───────────────────────────────────────────── */
+
+  --space-1:  0.25rem;   /* 4px */
+  --space-2:  0.5rem;    /* 8px */
+  --space-3:  0.75rem;   /* 12px */
+  --space-4:  1rem;      /* 16px */
+  --space-5:  1.25rem;   /* 20px */
+  --space-6:  1.5rem;    /* 24px */
+  --space-8:  2rem;      /* 32px */
+  --space-10: 2.5rem;    /* 40px */
+  --space-12: 3rem;      /* 48px */
+  --space-16: 4rem;      /* 64px */
+
+  /* ── Border Radius ─────────────────────────────────────── */
+
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ───────────────────────────────────────────── */
+
+  --shadow-sm:    0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md:    0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg:    0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-xl:    0 16px 48px rgba(0, 0, 0, 0.5);
+  --shadow-glow:  0 0 20px var(--primary-glow);
+  --shadow-inner: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* ── Z-Index Scale ─────────────────────────────────────── */
+
+  --z-base:      1;
+  --z-dropdown:  100;
+  --z-sticky:    200;
+  --z-sidebar:   300;
+  --z-header:    400;
+  --z-overlay:   500;
+  --z-modal:     600;
+  --z-popover:   700;
+  --z-toast:     800;
+  --z-max:       999;
+
+  /* ── Transitions ───────────────────────────────────────── */
+
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
+  --ease-in:      cubic-bezier(0.4, 0, 1, 1);
+
+  --duration-fast:    150ms;
+  --duration-normal:  250ms;
+  --duration-slow:    400ms;
+
+  /* ── Layout ────────────────────────────────────────────── */
+
+  --sidebar-collapsed: 64px;
+  --sidebar-expanded:  240px;
+  --header-height:     56px;
+  --bottom-nav-height: 64px;
+  --content-max-width: 960px;
+}
+
+
+/* ============================================================
+   Global Resets & Base Styles
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-base);
+}
+
+button,
+textarea,
+input,
+select,
+a {
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ── Scrollbar ─────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+
+/* ============================================================
+   Shared Utilities
+   ============================================================ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus ring — visible only via keyboard */
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── Reduced Motion ──────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* ============================================================
+   Shared Keyframe Animations
+   ============================================================ */
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(0); opacity: 1; }
+  to   { transform: translateY(-100%); opacity: 0; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+
+/* ============================================================
+   Shared Component Patterns
+   ============================================================ */
+
+/* ── Skeleton Loading ────────────────────────────── */
+
+.skeleton {
+  background: var(--bg-surface);
+  background-image: linear-gradient(
+    110deg,
+    var(--bg-surface) 25%,
+    var(--bg-hover) 37%,
+    var(--bg-surface) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: var(--radius-md);
+}
+
+/* ── Spinner ─────────────────────────────────────── */
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(255, 255, 255, 0.2);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+/* ── Glass Effect ────────────────────────────────── */
+
+.glass {
+  background: rgba(20, 20, 31, 0.75);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ── Card Base ───────────────────────────────────── */
+
+.card {
+  background: var(--bg-raised);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  transition: transform var(--duration-normal) var(--ease-default),
+              box-shadow var(--duration-normal) var(--ease-default);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Button Base ─────────────────────────────────── */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--primary);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-default);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-default);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-focus);
+}
+
+/* ── Input Base ──────────────────────────────────── */
+
+.input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  transition: border-color var(--duration-fast) var(--ease-default),
+              box-shadow var(--duration-fast) var(--ease-default);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}

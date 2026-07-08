@@ -2,24 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
 /* Theme tokens */
-:root {
-  --blue-400: #60a5fa;
-  --blue-500: #3b82f6;
-  --blue-600: #2563eb;
-  --blue-700: #1d4ed8;
 
-  --surface: rgba(13, 18, 30, 0.92);
-  --surface-hover: rgba(16, 24, 40, 0.96);
-
-  --text: #e5e7eb;
-  --text-muted: #a8b3cf;
-
-  --border: rgba(59, 130, 246, 0.25);
-  --border-strong: rgba(59, 130, 246, 0.45);
-
-  --shadow-strong: 0 25px 60px rgba(2, 6, 23, 0.6);
-  --ring: 0 0 0 3px rgba(59, 130, 246, 0.35);
-}
 
 .unsubmitted-popup-overlay {
   position: fixed;
@@ -42,8 +25,8 @@
 .unsubmitted-popup-content {
   font-family: 'Roboto', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   background:
-    linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 0.92)),
-    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.08), transparent);
+    var(--bg-raised),
+    none;
   padding: 2.5rem;
   border-radius: 20px;
   max-width: 750px;
@@ -51,28 +34,28 @@
   max-height: 85vh;
   overflow-y: auto;
   position: relative;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-subtle);
   box-shadow:
-    var(--shadow-strong),
-    0 0 0 1px rgba(59, 130, 246, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    var(--shadow-xl),
+    0 0 0 1px var(--border-subtle),
+    inset 0 1px 0 transparent;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .unsubmitted-popup-content::-webkit-scrollbar { width: 12px; }
 .unsubmitted-popup-content::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;
   border-radius: 8px;
 }
 .unsubmitted-popup-content::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.35);
+  background: var(--border-default);
   border-radius: 8px;
   transition: background 0.3s ease;
 }
 .unsubmitted-popup-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.55);
+  background: var(--border-focus);
 }
 
 .unsubmitted-exam-header {
@@ -90,7 +73,7 @@
   display: block;
   width: 64px;
   height: 3px;
-  background: linear-gradient(90deg, var(--blue-600), var(--blue-400));
+  background: linear-gradient(90deg, var(--primary), var(--info));
   margin: 0.9rem auto 0;
   border-radius: 2px;
 }
@@ -113,17 +96,17 @@
 }
 
 .unsubmitted-exam-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   padding: 1.25rem 1.25rem 1.1rem;
   margin-bottom: 1rem;
   transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, transform 0.2s ease;
 }
 .unsubmitted-exam-card:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-hover);
-  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.12);
+  border-color: var(--border-default);
+  background: var(--bg-hover);
+  box-shadow: 0 10px 28px transparent;
 }
 
 .unsubmitted-exam-header-container {
@@ -149,7 +132,7 @@
 }
 
 .unsubmitted-exam-meta {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 0.95rem;
   display: flex;
   align-items: center;
@@ -168,7 +151,7 @@
   gap: 0.75rem;
 }
 .unsubmitted-exam-details .highlight {
-  color: var(--blue-400);
+  color: var(--info);
   font-weight: 600;
 }
 .detail-row {
@@ -189,7 +172,7 @@
 }
 
 .unsubmitted-exam-continue-button {
-  background: linear-gradient(135deg, var(--blue-600), var(--blue-500));
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   color: white;
   border: none;
   padding: 0.9rem 1.6rem;
@@ -201,16 +184,16 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28);
+  box-shadow: 0 6px 18px transparent;
 }
 .unsubmitted-exam-continue-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 10px 22px transparent;
   filter: saturate(1.05);
 }
 .unsubmitted-exam-continue-button:focus-visible {
   outline: none;
-  box-shadow: var(--ring);
+  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 .unsubmitted-exam-continue-button:disabled {
   opacity: 0.6;
@@ -220,7 +203,7 @@
 }
 
 .unsubmitted-exam-delete-button {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: var(--error);
   color: white;
   border: none;
   padding: 0.9rem 1.6rem;
@@ -232,16 +215,16 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.25);
+  box-shadow: 0 6px 18px transparent;
 }
 .unsubmitted-exam-delete-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(239, 68, 68, 0.35);
+  box-shadow: 0 10px 22px var(--error);
   filter: saturate(1.02);
 }
 .unsubmitted-exam-delete-button:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35);
+  box-shadow: 0 0 0 3px var(--error);
 }
 .unsubmitted-exam-delete-button:disabled {
   opacity: 0.6;
@@ -252,8 +235,8 @@
 
 /* Delete confirmation */
 .unsubmitted-exam-delete-confirmation {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: var(--error-soft);
+  border: 1px solid var(--error);
   border-radius: 12px;
   padding: 1.25rem;
   margin-top: 1.1rem;
@@ -301,11 +284,11 @@
 }
 .unsubmitted-exam-cancel-delete-button:focus-visible {
   outline: none;
-  box-shadow: var(--ring);
+  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 .unsubmitted-exam-confirm-delete-button {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: var(--error);
   color: white;
   border: none;
   padding: 0.85rem 1.4rem;
@@ -314,16 +297,16 @@
   font-weight: 700;
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
   flex: 1;
-  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.25);
+  box-shadow: 0 6px 18px transparent;
 }
 .unsubmitted-exam-confirm-delete-button:hover {
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  background: var(--error);
   transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(239, 68, 68, 0.35);
+  box-shadow: 0 10px 22px var(--error);
 }
 .unsubmitted-exam-confirm-delete-button:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35);
+  box-shadow: 0 0 0 3px var(--error);
 }
 .unsubmitted-exam-confirm-delete-button:disabled {
   opacity: 0.6;
@@ -334,7 +317,7 @@
 
 .unsubmitted-exam-no-exams-message {
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   padding: 2rem;
   font-style: italic;
   font-size: 1.08rem;

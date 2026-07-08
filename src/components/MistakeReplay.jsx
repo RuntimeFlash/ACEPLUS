@@ -150,8 +150,13 @@ function MistakeReplay() {
                     <button
                       key={key}
                       type="button"
-                      className={`replay-option-btn ${selectedOption === key ? 'selected' : ''}`}
-                      onClick={() => setSelectedOption(key)}
+                      className={`replay-option-btn ${
+                        feedback 
+                          ? (feedback.correctOption === key ? 'correct' : (selectedOption === key ? 'wrong' : ''))
+                          : (selectedOption === key ? 'selected' : '')
+                      }`}
+                      onClick={() => !feedback && setSelectedOption(key)}
+                      disabled={!!feedback || submitting}
                     >
                       <span className="opt-key">{key.toUpperCase()})</span> {optionText}
                     </button>

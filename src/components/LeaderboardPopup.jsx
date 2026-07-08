@@ -9,7 +9,7 @@ const PopupOverlay = styled(motion.div)`
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--bg-overlay);
   backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
@@ -19,7 +19,7 @@ const PopupOverlay = styled(motion.div)`
 `;
 
 const PopupContent = styled(motion.div)`
-  background: rgba(26, 26, 26, 0.95);
+  background: var(--bg-raised);
   padding: 2rem;
   border-radius: 12px;
   max-width: 600px;
@@ -28,7 +28,7 @@ const PopupContent = styled(motion.div)`
   min-height: 500px;
   overflow-y: auto;
   position: relative;
-  border: 1px solid #333;
+  border: 1px solid var(--border-subtle);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   filter: ${props => props.$isActive ? 'none' : 'blur(3px) brightness(0.7)'};
   transition: filter 0.3s;
@@ -43,16 +43,16 @@ const PopupContent = styled(motion.div)`
   }
 
   &::-webkit-scrollbar-track {
-    background: #222;
+    background: var(--bg-surface);
     border-radius: 4px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #444;
+    background: var(--border-default);
     border-radius: 4px;
     
     &:hover {
-      background: #555;
+      background: var(--border-focus);
     }
   }
 `;
@@ -60,7 +60,7 @@ const PopupContent = styled(motion.div)`
 const Header = styled(motion.h2)`
   text-align: center;
   margin-bottom: 1rem;
-  color: #fff;
+  color: var(--text-primary); font-family: var(--font-display);
   font-size: 1.8rem;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -79,7 +79,7 @@ const Header = styled(motion.h2)`
 const SubHeader = styled(motion.div)`
   text-align: center;
   margin-bottom: 1.5rem;
-  color: #999;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   
   @media (max-width: 768px) {
@@ -119,8 +119,8 @@ const Table = styled(motion.table)`
 const Th = styled.th`
   padding: 0.75rem 0.5rem;
   text-align: left;
-  border-bottom: 2px solid #333;
-  color: #fff;
+  border-bottom: 2px solid var(--border-subtle);
+  color: var(--text-primary); font-family: var(--font-display);
   font-weight: 600;
   white-space: normal;
   word-wrap: break-word;
@@ -155,8 +155,8 @@ const Th = styled.th`
 
 const Td = styled.td`
   padding: 0.75rem 0.5rem;
-  border-bottom: 1px solid #333;
-  color: #ccc;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
   white-space: normal;
   word-wrap: break-word;
   font-size: 1rem;
@@ -178,9 +178,9 @@ const Td = styled.td`
 
 const MedalRow = styled(motion.tr)`
   background: ${props => {
-    if (props.noExams) return 'rgba(255, 0, 0, 0.1)';
-    if (props.rank === 1) return 'linear-gradient(to right, rgba(255, 215, 0, 0.15), transparent)';
-    if (props.rank === 2) return 'linear-gradient(to right, rgba(192, 192, 192, 0.15), transparent)';
+    if (props.noExams) return 'var(--error-soft)';
+    if (props.rank === 1) return 'linear-gradient(to right, var(--accent-soft), transparent)';
+    if (props.rank === 2) return 'linear-gradient(to right, rgba(255, 255, 255, 0.1), transparent)';
     if (props.rank === 3) return 'linear-gradient(to right, rgba(205, 127, 50, 0.15), transparent)';
     return 'transparent';
   }};
@@ -188,11 +188,11 @@ const MedalRow = styled(motion.tr)`
 
   &:hover {
     background: ${props => {
-      if (props.noExams) return 'rgba(255, 0, 0, 0.15)';
-      if (props.rank === 1) return 'linear-gradient(to right, rgba(255, 215, 0, 0.2), transparent)';
-      if (props.rank === 2) return 'linear-gradient(to right, rgba(192, 192, 192, 0.2), transparent)';
+      if (props.noExams) return 'var(--error-soft)';
+      if (props.rank === 1) return 'linear-gradient(to right, var(--accent-soft), transparent)';
+      if (props.rank === 2) return 'linear-gradient(to right, rgba(255, 255, 255, 0.15), transparent)';
       if (props.rank === 3) return 'linear-gradient(to right, rgba(205, 127, 50, 0.2), transparent)';
-      return '#222';
+      return 'var(--bg-surface)';
     }};
   }
 `;
@@ -221,7 +221,7 @@ const Medal = styled(motion.span)`
 
 const RankNumber = styled(Medal)`
   font-size: 1rem;
-  color: #666;
+  color: var(--text-muted);
   
   @media (max-width: 768px) {
     font-size: 0.9rem;
@@ -241,17 +241,17 @@ const CloseButton = styled.button`
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #999;
+  color: var(--text-secondary);
   transition: color 0.3s;
   
   &:hover {
-    color: #fff;
+    color: var(--text-primary); font-family: var(--font-display);
   }
 `;
 
 const NoDataMessage = styled(motion.div)`
   text-align: center;
-  color: #999;
+  color: var(--text-secondary);
   padding: 2rem;
   font-style: italic;
   font-size: 1rem;
@@ -268,7 +268,7 @@ const NoDataMessage = styled(motion.div)`
 `;
 
 const ResetMessage = styled(motion.div)`
-  color: #666;
+  color: var(--text-muted);
   font-size: 0.8rem;
   margin-top: 0.5rem;
   font-style: italic;
@@ -285,7 +285,7 @@ const ResetMessage = styled(motion.div)`
 `;
 
 const NoExamsText = styled.span`
-  color: #ff6b6b;
+  color: var(--error);
   font-style: italic;
   font-size: 0.85rem;
   font-weight: 300;
@@ -304,7 +304,7 @@ const NoExamsText = styled.span`
 `;
 
 const EloScore = styled(motion.span)`
-  color: #4dabf7;
+  color: var(--info);
   font-weight: 500;
   font-size: 1rem;
   
@@ -320,8 +320,8 @@ const EloScore = styled(motion.span)`
 const Spinner = styled(motion.div)`
   width: 40px;
   height: 40px;
-  border: 3px solid #333;
-  border-top: 3px solid #4dabf7;
+  border: 3px solid var(--border-subtle);
+  border-top: 3px solid var(--info);
   border-radius: 50%;
   margin: 0 auto;
 `;
@@ -329,7 +329,7 @@ const Spinner = styled(motion.div)`
 const LoadingIndicator = styled(motion.div)`
   text-align: center;
   padding: 1rem;
-  color: #666;
+  color: var(--text-muted);
   font-style: italic;
   display: flex;
   flex-direction: column;
@@ -625,7 +625,7 @@ const LeaderboardPopup = ({ isOpen, onClose, leaderboardData, updatePopupOpen })
                            style={{
                               position: 'sticky',
                               bottom: 0,
-                              backgroundColor: 'rgba(26, 26, 26, 0.95)'
+                              backgroundColor: 'var(--bg-raised)'
                             }}
                            >
                             <Spinner

@@ -1,3 +1,7 @@
+/* ============================================================
+   Header Component
+   ============================================================ */
+
 .header {
   position: fixed;
   top: 0;
@@ -6,23 +10,76 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px 20px;
-  background: rgba(25, 25, 25, 0.5);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  z-index: 1001;
-  height: 60px;
-  transition: top 0.3s, background-color 0.3s, border-color 0.3s;
-  
+  padding: 0 var(--space-5);
+  background: color-mix(in srgb, var(--bg-raised) 75%, transparent);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-header);
+  height: var(--header-height);
+  transition: top var(--duration-slow) var(--ease-default),
+              background-color var(--duration-slow) var(--ease-default),
+              border-color var(--duration-slow) var(--ease-default);
 }
+
+.header.header--hidden {
+  top: calc(-1 * var(--header-height));
+}
+
+/* ── Left section ─────────────────────────────── */
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
 }
+
+.header-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+}
+
+.header-text {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  color: var(--primary);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+/* ── Hamburger menu button (mobile) ───────────── */
+
+.header-menu-btn {
+  display: none; /* hidden on desktop */
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-default),
+              color var(--duration-fast) var(--ease-default);
+  -webkit-tap-highlight-color: transparent;
+  margin-right: var(--space-2);
+  font-size: var(--text-xl);
+}
+
+.header-menu-btn:hover {
+  background: var(--bg-hover);
+  color: var(--primary);
+}
+
+.header-menu-btn:active {
+  transform: scale(0.93);
+}
+
+/* ── Action buttons (profile, friends) ────────── */
 
 .header-actions {
   position: absolute;
@@ -30,47 +87,41 @@
   top: 50%;
   transform: translateY(-50%);
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .header-action-btn {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--primary-soft);
+  color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+  font-size: var(--text-base);
 }
 
 .header-action-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-default);
 }
 
 .header-action-btn.active {
-  border-color: rgba(0, 123, 255, 0.8);
-  color: #4ea0ff;
+  border-color: var(--border-focus);
+  color: var(--primary);
+  background: var(--primary-glow);
 }
 
-.header-logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
-.header-text {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #fff;
-  margin: 0;
-}
+/* ── Right section (coins) ────────────────────── */
 
 .header-right {
   position: absolute;
-  right: 20px;
+  right: var(--space-5);
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -89,7 +140,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  transition: opacity 0.5s ease-in-out;
+  transition: opacity var(--duration-slow) var(--ease-default);
 }
 
 .header-right.is-loading .coins-container {
@@ -108,17 +159,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 8px 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: background-color 0.3s, transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  gap: var(--space-2);
+  background: var(--accent-soft);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  transition: background-color var(--duration-normal) var(--ease-default),
+              transform var(--duration-normal) var(--ease-spring);
   user-select: none;
 }
 
 .coins-container:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(245, 166, 35, 0.18);
 }
 
 .header-right:active .coins-container {
@@ -126,56 +178,77 @@
 }
 
 .coins-icon {
-  color: #f1c40f;
-  font-size: 1.2rem;
+  color: var(--accent);
+  font-size: var(--text-lg);
 }
 
 .coins-amount {
-  color: #fff;
-  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
 }
 
 .skeleton-coin {
   width: 70px;
   height: 38px;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
 }
 
+/* ── Mobile adjustments ───────────────────────── */
+
 @media (max-width: 768px) {
+  .header {
+    padding: 0 var(--space-3);
+  }
+
+  .header-menu-btn {
+    display: inline-flex;
+  }
+
   .header-logo {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
   }
+
   .header-text {
-    font-size: 1.2rem;
+    font-size: var(--text-lg);
   }
+
   .coins-container {
-    padding: 6px 10px;
-    gap: 6px;
+    padding: var(--space-1) var(--space-2);
+    gap: var(--space-1);
   }
+
   .coins-icon {
-    font-size: 1rem;
+    font-size: var(--text-base);
   }
+
   .coins-amount {
-    font-size: 0.9rem;
+    font-size: var(--text-xs);
   }
+
   .header-right {
     width: 60px;
     height: 32px;
-    right: 10px;
+    right: var(--space-3);
   }
+
   .header-actions {
-    right: 80px;
-    gap: 6px;
+    right: 76px;
+    gap: var(--space-1);
   }
+
   .header-action-btn {
     width: 30px;
     height: 30px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
   }
+
   .skeleton-coin {
     width: 60px;
     height: 32px;
-    border-radius: 16px;
+    border-radius: var(--radius-full);
   }
 }

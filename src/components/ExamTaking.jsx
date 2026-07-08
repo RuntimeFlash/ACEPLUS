@@ -15,22 +15,12 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import Notification from './Notification';
+import './exam.css';
 
 const ExamWrapper = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-top: 60px; /* Account for header */
-  transition: margin-left 0.3s ease-in-out;
-  margin-left: 70px;
-
-  .sidebar:hover ~ & {
-    margin-left: 220px;
-  }
-
-  @media (max-width: 768px) {
-    margin-left: 0;
-  }
 `;
 
 const ReportButton = styled(motion.button)`
@@ -61,15 +51,15 @@ const ReportButton = styled(motion.button)`
 const HintContainer = styled(motion.div)`
   margin-top: 1rem;
   padding: 1.5rem;
-  border-radius: 12px;
-  background: rgba(255, 215, 0, 0.1);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-  color: #ffd700;
-  font-size: 0.95rem;
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--text-sm);
   line-height: 1.5;
   
   .katex {
-    color: #ffd700;
+    color: var(--accent);
   }
 
   @media (max-width: 768px) {
@@ -78,25 +68,25 @@ const HintContainer = styled(motion.div)`
 `;
 
 const HintContent = styled.div`
-  color: #ffd700;
+  color: var(--accent);
   
   .hint-header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     margin-bottom: 1rem;
-    color: #ffd700;
+    color: var(--accent);
     font-weight: 600;
   }
 
   .hint-content {
-    color: #ffd700;
-    font-size: 1rem;
+    color: var(--accent);
+    font-size: var(--text-base);
     line-height: 1.6;
     margin-top: 0.5rem;
 
     h1, h2, h3, h4, h5, h6 {
-      color: #fff;
+      color: var(--text-primary);
       margin: 1.5rem 0 1rem;
       font-weight: 600;
       line-height: 1.3;
@@ -106,14 +96,14 @@ const HintContent = styled.div`
       }
     }
 
-    h1 { font-size: 1.5rem; }
-    h2 { font-size: 1.3rem; }
+    h1 { font-size: var(--text-2xl); }
+    h2 { font-size: var(--text-xl); }
     h3 { 
-      font-size: 1.2rem;
-      color: #ffd700;
+      font-size: var(--text-lg);
+      color: var(--accent);
     }
-    h4 { font-size: 1.1rem; }
-    h5, h6 { font-size: 1rem; }
+    h4 { font-size: var(--text-lg); }
+    h5, h6 { font-size: var(--text-base); }
 
     p {
       margin: 0.8rem 0;
@@ -137,35 +127,35 @@ const HintContent = styled.div`
     }
 
     code {
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--border-subtle);
       padding: 0.2rem 0.4rem;
-      border-radius: 4px;
-      font-family: 'Fira Code', monospace;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
       font-size: 0.9em;
     }
 
     pre {
-      background: rgba(18, 18, 18, 0.8);
+      background: var(--bg-base);
       padding: 1rem;
-      border-radius: 8px;
+      border-radius: var(--radius-md);
       overflow-x: auto;
       margin: 1rem 0;
-      border: 1px solid rgba(255, 215, 0, 0.2);
+      border: 1px solid var(--accent-soft);
 
       code {
         background: none;
         padding: 0;
-        color: #fff;
+        color: var(--text-primary);
       }
     }
 
     blockquote {
-      border-left: 4px solid #ffd700;
+      border-left: 4px solid var(--accent);
       margin: 1rem 0;
       padding: 0.5rem 0 0.5rem 1rem;
       font-style: italic;
-      background: rgba(255, 215, 0, 0.05);
-      border-radius: 0 4px 4px 0;
+      background: var(--accent-soft);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     }
 
     table {
@@ -176,55 +166,55 @@ const HintContent = styled.div`
     }
 
     th, td {
-      border: 1px solid rgba(255, 215, 0, 0.2);
+      border: 1px solid var(--accent-soft);
       padding: 0.5rem;
       text-align: left;
     }
 
     th {
-      background: rgba(255, 215, 0, 0.1);
+      background: var(--accent-soft);
       font-weight: 600;
     }
 
     tr:nth-child(even) {
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--bg-surface);
     }
 
     hr {
       border: none;
-      border-top: 1px solid rgba(255, 215, 0, 0.2);
+      border-top: 1px solid var(--accent-soft);
       margin: 1.5rem 0;
     }
 
     a {
-      color: #ffd700;
+      color: var(--accent);
       text-decoration: none;
-      border-bottom: 1px dashed #ffd700;
+      border-bottom: 1px dashed var(--accent);
       transition: all 0.2s ease;
 
       &:hover {
         border-bottom-style: solid;
-        color: #fff;
+        color: var(--text-primary);
       }
     }
 
     img {
       max-width: 100%;
       height: auto;
-      border-radius: 8px;
+      border-radius: var(--radius-md);
       margin: 1rem 0;
     }
 
     .katex {
       font-size: 1.1em;
-      color: #ffd700;
+      color: var(--accent);
     }
 
     .katex-display {
       margin: 1rem 0;
       padding: 0.5rem;
-      background: rgba(255, 215, 0, 0.05);
-      border-radius: 8px;
+      background: var(--accent-soft);
+      border-radius: var(--radius-md);
       overflow-x: auto;
     }
   }
@@ -263,7 +253,7 @@ const IconContainer = ({ status, index }) => {
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
         >
           <AiOutlineLoading3Quarters
-            style={{ fontSize: '1.2rem', color: '#666' }}
+            style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}
           />
         </motion.div>
       ) : status === `${index}-done` ? (
@@ -273,7 +263,7 @@ const IconContainer = ({ status, index }) => {
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         >
           <BsCheckCircleFill
-            style={{ fontSize: '1.2rem', color: '#22c55e' }}
+            style={{ fontSize: '1.2rem', color: 'var(--success)' }}
           />
         </motion.div>
       ) : (
@@ -282,7 +272,7 @@ const IconContainer = ({ status, index }) => {
           whileTap={{ scale: 0.9 }}
         >
           <FaExclamationCircle
-            style={{ fontSize: '1.2rem', color: '#dc2626' }}
+            style={{ fontSize: '1.2rem', color: 'var(--error)' }}
           />
         </motion.div>
       )}
@@ -291,28 +281,28 @@ const IconContainer = ({ status, index }) => {
 };
 
 const ExamIdSection = styled.div`
-  background: #1a1a1a;
-  border-radius: 12px;
+  background: var(--bg-raised);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   margin: 1.5rem 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px var(--shadow-md);
+  border: 1px solid var(--border-subtle);
 `;
 
 const ExamIdTitle = styled.h3`
   margin: 0;
-  color: #667eea;
-  font-size: 1.2rem;
+  color: var(--primary);
+  font-size: var(--text-lg);
   display: flex;
   align-items: center;
   gap: 0.5rem;
 
   svg {
-    font-size: 1.4rem;
+    font-size: var(--text-xl);
   }
 `;
 
@@ -325,24 +315,24 @@ const ExamIdContent = styled.div`
 `;
 
 const ExamIdLabel = styled.div`
-  color: #b0b0b0;
-  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
 `;
 
 const ExamHeader = styled.div`
-  background: #1a1a1a;
-  border-radius: 12px;
+  background: var(--bg-raised);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px var(--shadow-md);
+  border: 1px solid var(--border-subtle);
   text-align: center;
 `;
 
 const ExamTitle = styled.h1`
   margin: 0 0 1rem 0;
-  color: #ffffff;
-  font-size: 2rem;
+  color: var(--text-primary);
+  font-size: var(--text-3xl);
   font-weight: 600;
 `;
 
@@ -355,29 +345,29 @@ const LessonsContainer = styled.div`
 `;
 
 const LessonTag = styled.span`
-  background-color: rgba(102, 126, 234, 0.1);
-  color: #667eea;
+  background-color: var(--primary-soft);
+  color: var(--primary);
   padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  border: 1px solid var(--border-focus);
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: rgba(102, 126, 234, 0.15);
-    border-color: rgba(102, 126, 234, 0.3);
+    background-color: var(--primary-glow);
+    border-color: var(--primary);
     transform: translateY(-1px);
   }
 `;
 
 const QuestionCard = styled(motion.div)`
-  background: #1a1a1a;
-  border-radius: 12px;
+  background: var(--bg-raised);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   position: relative;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px var(--shadow-md);
+  border: 1px solid var(--border-subtle);
 `;
 
 const QuestionHeader = styled.div`
@@ -392,7 +382,7 @@ const QuestionNumber = styled.div`
   position: absolute;
   top: -12px;
   left: -12px;
-  background: #2196f3;
+  background: var(--primary);
   color: white;
   width: 35px;
   height: 35px;
@@ -401,13 +391,13 @@ const QuestionNumber = styled.div`
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px var(--shadow-md);
   z-index: 1;
 `;
 
 const QuestionText = styled.h3`
-  color: #ffffff;
-  font-size: 1.2rem;
+  color: var(--text-primary);
+  font-size: var(--text-lg);
   font-weight: 500;
   margin: 0;
   line-height: 1.5;
@@ -424,37 +414,37 @@ const QuestionText = styled.h3`
 const TableContainer = styled.div`
   margin: 1rem 0;
   overflow-x: auto;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
   padding: 1rem;
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  color: #ffffff;
-  font-size: 1rem;
+  color: var(--text-primary);
+  font-size: var(--text-base);
 `;
 
 const TableHeader = styled.th`
-  background: rgba(79, 172, 254, 0.1);
+  background: var(--primary-soft);
   padding: 0.75rem 1rem;
   text-align: left;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-subtle);
   font-weight: 600;
 `;
 
 const TableCell = styled.td`
   padding: 0.75rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-subtle);
 `;
 
 const TableRow = styled.tr`
   &:nth-child(even) {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-base);
   }
   &:hover {
-    background: rgba(79, 172, 254, 0.05);
+    background: var(--primary-glow);
   }
 `;
 
@@ -467,18 +457,18 @@ const OptionsContainer = styled(motion.div)`
 const RippleContainer = styled(motion.div)`
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 `;
 
 const Option = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
   padding: 1rem 1.2rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
   transform: scale(1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -488,15 +478,15 @@ const Option = styled(motion.div)`
   overflow: hidden;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--bg-hover);
+    border-color: var(--border-default);
     transform: translateY(-1px);
   }
 
   &.selected {
-    background: rgba(102, 126, 234, 0.1);
-    border-color: rgba(102, 126, 234, 0.3);
-    color: #667eea;
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary);
   }
 
   .ripple {
@@ -504,7 +494,7 @@ const Option = styled(motion.div)`
     border-radius: 50%;
     transform: scale(0);
     animation: ripple 0.6s linear;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--border-default);
   }
 
   @keyframes ripple {
@@ -526,7 +516,7 @@ const LoadingDots = styled(motion.div)`
   div {
     width: 8px;
     height: 8px;
-    background: rgba(255, 215, 0, 0.4);
+    background: var(--accent);
     border-radius: 50%;
   }
 `;
@@ -534,9 +524,9 @@ const LoadingDots = styled(motion.div)`
 const HintSkeletonLoader = styled(motion.div)`
   margin-top: 1rem;
   padding: 1.5rem;
-  border-radius: 12px;
-  background: rgba(255, 215, 0, 0.05);
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft);
   height: 80px;
   position: relative;
   overflow: hidden;
@@ -551,7 +541,7 @@ const HintSkeletonLoader = styled(motion.div)`
     background: linear-gradient(
       90deg,
       transparent 25%,
-      rgba(255, 215, 0, 0.2) 50%,
+      var(--accent-soft) 50%,
       transparent 75%
     );
     transform: translateX(-150%);
@@ -561,10 +551,10 @@ const HintSkeletonLoader = styled(motion.div)`
   &::after {
     background: repeating-linear-gradient(
       45deg,
-      rgba(255, 215, 0, 0.03) 0px,
-      rgba(255, 215, 0, 0.03) 10px,
-      rgba(255, 215, 0, 0.06) 10px,
-      rgba(255, 215, 0, 0.06) 20px
+      var(--accent-soft) 0px,
+      var(--accent-soft) 10px,
+      var(--accent-soft) 10px,
+      var(--accent-soft) 20px
     );
   }
 
@@ -585,7 +575,7 @@ const HintContentWrapper = styled.div`
   position: relative;
   
   .hint-text {
-    color: #ffd700;
+    color: var(--accent);
     line-height: 1.6;
   }
 
@@ -704,28 +694,28 @@ const renderTable = (tableData) => {
 };
 
 const HintToggleButton = styled(motion.button)`
-  background: ${props => props.isGenerated ? 'rgba(255, 215, 0, 0.1)' : 'transparent'};
-  border: 2px solid ${props => props.isGenerated ? '#ffd700' : 'rgba(255, 215, 0, 0.3)'};
-  border-radius: 12px;
+  background: ${props => props.isGenerated ? 'var(--accent-soft)' : 'transparent'};
+  border: 2px solid ${props => props.isGenerated ? 'var(--accent)' : 'var(--accent-soft)'};
+  border-radius: var(--radius-lg);
   cursor: pointer;
   padding: 8px 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffd700;
+  color: var(--accent);
   transition: all 0.3s ease;
   height: 40px;
   gap: 8px;
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
   font-weight: 500;
   width: fit-content;
   min-width: 120px;
   backdrop-filter: blur(5px);
   
   &:hover {
-    background: rgba(255, 215, 0, 0.15);
+    background: var(--accent-soft);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.1);
+    box-shadow: 0 4px 12px var(--accent-soft);
   }
   
   &:active {
@@ -734,15 +724,15 @@ const HintToggleButton = styled(motion.button)`
   
   &:disabled {
     cursor: default;
-    color: #666;
-    border-color: rgba(102, 102, 102, 0.3);
+    color: var(--text-muted);
+    border-color: var(--border-subtle);
     background: transparent;
     transform: none;
     box-shadow: none;
   }
 
   svg {
-    font-size: 1.2rem;
+    font-size: var(--text-lg);
   }
 `;
 
@@ -1309,7 +1299,7 @@ const handleHintRequest = async (questionId, questionText) => {
             padding: '12px 24px',
             position: 'relative',
             overflow: 'hidden',
-            background: '#2196f3',
+            background: 'var(--primary)',
             minWidth: '150px',
             display: 'flex',
             alignItems: 'center',
@@ -1330,13 +1320,13 @@ const handleHintRequest = async (questionId, questionText) => {
                   cx="25"
                   cy="25"
                   r="20"
-                  fill="#2196f3"
+                  fill="var(--primary)"
                   animate={{
                     r: [20, 22, 20],
                     filter: [
-                      'drop-shadow(0 0 2px #2196f3)',
-                      'drop-shadow(0 0 8px #2196f3)',
-                      'drop-shadow(0 0 2px #2196f3)'
+                      'drop-shadow(0 0 2px var(--primary))',
+                      'drop-shadow(0 0 8px var(--primary))',
+                      'drop-shadow(0 0 2px var(--primary))'
                     ]
                   }}
                   transition={{
@@ -1348,7 +1338,7 @@ const handleHintRequest = async (questionId, questionText) => {
 
                 {/* Liquid blob */}
                 <motion.path
-                  fill="#ffffff"
+                  fill="var(--text-primary)"
                   animate={{
                     d: [
                       "M25,15 C28,15 31,17 31,20 C31,23 28,25 25,25 C22,25 19,23 19,20 C19,17 22,15 25,15",
@@ -1369,7 +1359,7 @@ const handleHintRequest = async (questionId, questionText) => {
                   <motion.circle
                     key={i}
                     r={1.5}
-                    fill="#ffffff"
+                    fill="var(--text-primary)"
                     animate={{
                       y: [0, -15, 0],
                       x: [0, Math.sin(i * Math.PI) * 10, 0],
@@ -1414,7 +1404,7 @@ const handleHintRequest = async (questionId, questionText) => {
                   cx="25"
                   cy="25"
                   r="5"
-                  fill="#ffffff"
+                  fill="var(--text-primary)"
                   animate={{
                     r: [5, 7, 5],
                     opacity: [0.5, 1, 0.5],

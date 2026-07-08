@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../utils/api';
 import { motion } from 'framer-motion';
+import './SubjectDetails.css';
 
 const SkeletonCard = () => (
   <div className="subject-detail-card skeleton">
@@ -28,13 +29,13 @@ const SubjectDetails = ({ subject }) => {
   }, [subject]);
 
   const detailCards = [
-    { title: 'Exams Given', value: details?.attempted, icon: '📚', color: '#7FB069' },
-    { title: 'Questions Attempted', value: details?.marksAttempted, icon: '✏️', color: '#64B5F6' },
-    { title: 'Marks Gained', value: details?.marksGained, icon: '🎯', color: '#FFD54F' },
-    { title: 'Average Percentage', value: details?.avgPercentage ? `${details.avgPercentage.toFixed(2)}%` : 'N/A', icon: '📊', color: '#BA68C8' },
-    { title: 'Highest Percentage in Exam', value: details?.highestMark ? details.highestMark.toFixed(2) : 'N/A', icon: '💪', color: '#FF8A65' },
-    { title: 'Lowest Percentage in Exam', value: details?.lowestMark ? details.lowestMark.toFixed(2) : 'N/A', icon: '🔍', color: '#A1887F' },
-  ]
+    { title: 'Exams Given', value: details?.attempted, icon: '📚', color: 'var(--success)' },
+    { title: 'Questions Attempted', value: details?.marksAttempted, icon: '✏️', color: 'var(--info)' },
+    { title: 'Marks Gained', value: details?.marksGained, icon: '🎯', color: 'var(--warning)' },
+    { title: 'Average Percentage', value: details?.avgPercentage ? `${details.avgPercentage.toFixed(2)}%` : 'N/A', icon: '📊', color: 'var(--color-math)' },
+    { title: 'Highest Percentage in Exam', value: details?.highestMark ? details.highestMark.toFixed(2) : 'N/A', icon: '💪', color: 'var(--color-english)' },
+    { title: 'Lowest Percentage in Exam', value: details?.lowestMark ? details.lowestMark.toFixed(2) : 'N/A', icon: '🔍', color: 'var(--error)' },
+  ];
   return (
     <motion.div 
       className="subject-details-container"
