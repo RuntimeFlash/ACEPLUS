@@ -188,7 +188,7 @@ function App() {
         "Direct installation trigger is not supported on this browser. " +
         "We will simulate setup; please click 'Add' or 'Install' if prompted, or use the menu icon (⋮) in Chrome's top-right corner to 'Install app' manually."
       );
-      startSimulatedDownloader(3000);
+      startSimulatedDownloader(20000);
       return;
     }
     try {
@@ -204,7 +204,7 @@ function App() {
       }
     } catch (err) {
       console.error("Installation prompt error:", err);
-      startSimulatedDownloader(3000);
+      startSimulatedDownloader(20000);
     }
   };
 
