@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from main import create_app
+from index import create_app
 
 
 def test_legacy_route_contract_paths_exist() -> None:
