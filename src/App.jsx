@@ -99,12 +99,6 @@ function App() {
 
     const handleAppInstalled = () => {
       setDeferredPrompt(null);
-      if (installTimerRef.current) {
-        clearInterval(installTimerRef.current);
-      }
-      setIsDownloading(false);
-      setDownloadProgress(100);
-      setDownloadFinished(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -151,30 +145,17 @@ function App() {
     setDownloadProgress(0);
     setDownloadFinished(false);
 
-    const duration = 25000; // 25s fallback duration
+    const duration = 20000; // 20s duration to match WebAPK background installation
     const intervalTime = 100;
     const totalSteps = duration / intervalTime;
     let currentStep = 0;
 
     installTimerRef.current = setInterval(() => {
       currentStep++;
-      const rawProgress = (currentStep / totalSteps) * 100;
-      
-      // Slow down progress as it approaches 95%
-      let progress;
-      if (rawProgress < 80) {
-        progress = Math.round(rawProgress);
-      } else {
-        // Slowly climb from 80% to 95%
-        progress = Math.round(80 + (rawProgress - 80) * 0.75);
-      }
-      
-      progress = Math.min(progress, 95);
+      const progress = Math.min(Math.round((currentStep / totalSteps) * 100), 100);
       setDownloadProgress(progress);
 
-      // Fallback safety: If 35 seconds pass and no appinstalled event has fired,
-      // we auto-complete so the user doesn't get stuck.
-      if (currentStep >= totalSteps + 100) { // 35 seconds total
+      if (currentStep >= totalSteps) {
         clearInterval(installTimerRef.current);
         setIsDownloading(false);
         setDownloadFinished(true);
