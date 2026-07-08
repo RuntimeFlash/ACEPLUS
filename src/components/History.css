@@ -132,7 +132,6 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  border-left: 3px solid var(--border-default);
 }
 
 .exam-card::before {
@@ -156,14 +155,14 @@
   transform: translateX(100%);
 }
 
-/* Subject-colored left border — set via inline or class */
-.exam-card.subject-math { border-left-color: var(--color-math); }
-.exam-card.subject-science { border-left-color: var(--color-science); }
-.exam-card.subject-ss { border-left-color: var(--color-ss); }
-.exam-card.subject-english { border-left-color: var(--color-english); }
+/* Subject-colored border — set via inline or class */
+.exam-card.subject-math { border-color: var(--color-math); }
+.exam-card.subject-science { border-color: var(--color-science); }
+.exam-card.subject-ss { border-color: var(--color-ss); }
+.exam-card.subject-english { border-color: var(--color-english); }
 
 .history-container .test-card {
-  border-left: 3px solid var(--accent);
+  border-color: var(--accent);
 }
 
 .history-container .test-name {
