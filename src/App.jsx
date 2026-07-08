@@ -258,23 +258,16 @@ function App() {
           completedTasks={completedTasks}
           onToggleSidebar={toggleSidebar}
           isMobile={isMobile}
+          isOpen={sidebarOpen}
         />
       )}
 
       <div className="app-layout">
-        {isAuthenticated && (
+        {isAuthenticated && !isMobile && (
           <Sidebar
             isOpen={sidebarOpen}
             onToggle={toggleSidebar}
-            isMobile={isMobile}
-          />
-        )}
-
-        {/* Mobile sidebar overlay */}
-        {isMobile && (
-          <div
-            className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`}
-            onClick={() => setSidebarOpen(false)}
+            isMobile={false}
           />
         )}
 

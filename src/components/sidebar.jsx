@@ -39,11 +39,6 @@ function Sidebar({ isOpen, onToggle, isMobile }) {
 
   return (
     <aside className={`sidebar ${isOpen ? 'expanded' : ''} ${isMobile && isOpen ? 'mobile-open' : ''}`}>
-      {/* Toggle button — desktop only */}
-      <button className="sidebar-toggle" onClick={onToggle} aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}>
-        {isOpen ? <RiMenuFoldLine /> : <RiMenuUnfoldLine />}
-      </button>
-
       <nav className="sidebar-nav">
         {navItems.map(({ path, label, icon: Icon, matchPaths }) => {
           const isActive = matchPaths
