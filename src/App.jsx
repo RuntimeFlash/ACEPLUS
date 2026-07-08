@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Route,
   Routes,
@@ -80,6 +80,7 @@ function App() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [downloadFinished, setDownloadFinished] = useState(false);
+  const installTimerRef = useRef(null);
 
   useEffect(() => {
     const checkInstallation = () => {
@@ -98,6 +99,12 @@ function App() {
 
     const handleAppInstalled = () => {
       setDeferredPrompt(null);
+      if (installTimerRef.current) {
+        clearInterval(installTimerRef.current);
+      }
+      setIsDownloading(false);
+      setDownloadProgress(100);
+      setDownloadFinished(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -107,26 +114,68 @@ function App() {
       mediaQuery.removeEventListener('change', checkInstallation);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      if (installTimerRef.current) {
+        clearInterval(installTimerRef.current);
+      }
     };
   }, []);
 
-  const startDownloader = () => {
+  const startSimulatedDownloader = (duration = 3000) => {
+    if (installTimerRef.current) clearInterval(installTimerRef.current);
+
     setIsDownloading(true);
     setDownloadProgress(0);
     setDownloadFinished(false);
 
-    const duration = 20000;
     const intervalTime = 100;
     const totalSteps = duration / intervalTime;
     let currentStep = 0;
 
-    const timer = setInterval(() => {
+    installTimerRef.current = setInterval(() => {
       currentStep++;
       const progress = Math.min(Math.round((currentStep / totalSteps) * 100), 100);
       setDownloadProgress(progress);
 
       if (currentStep >= totalSteps) {
-        clearInterval(timer);
+        clearInterval(installTimerRef.current);
+        setIsDownloading(false);
+        setDownloadFinished(true);
+      }
+    }, intervalTime);
+  };
+
+  const startRealDownloader = () => {
+    if (installTimerRef.current) clearInterval(installTimerRef.current);
+
+    setIsDownloading(true);
+    setDownloadProgress(0);
+    setDownloadFinished(false);
+
+    const duration = 25000; // 25s fallback duration
+    const intervalTime = 100;
+    const totalSteps = duration / intervalTime;
+    let currentStep = 0;
+
+    installTimerRef.current = setInterval(() => {
+      currentStep++;
+      const rawProgress = (currentStep / totalSteps) * 100;
+      
+      // Slow down progress as it approaches 95%
+      let progress;
+      if (rawProgress < 80) {
+        progress = Math.round(rawProgress);
+      } else {
+        // Slowly climb from 80% to 95%
+        progress = Math.round(80 + (rawProgress - 80) * 0.75);
+      }
+      
+      progress = Math.min(progress, 95);
+      setDownloadProgress(progress);
+
+      // Fallback safety: If 35 seconds pass and no appinstalled event has fired,
+      // we auto-complete so the user doesn't get stuck.
+      if (currentStep >= totalSteps + 100) { // 35 seconds total
+        clearInterval(installTimerRef.current);
         setIsDownloading(false);
         setDownloadFinished(true);
       }
@@ -139,7 +188,7 @@ function App() {
         "Direct installation trigger is not supported on this browser. " +
         "We will simulate setup; please click 'Add' or 'Install' if prompted, or use the menu icon (⋮) in Chrome's top-right corner to 'Install app' manually."
       );
-      startDownloader();
+      startSimulatedDownloader(3000);
       return;
     }
     try {
@@ -147,10 +196,16 @@ function App() {
       const { outcome } = await deferredPrompt.userChoice;
       console.log(`User response to the install prompt: ${outcome}`);
       setDeferredPrompt(null);
+      
+      if (outcome === 'accepted') {
+        startRealDownloader();
+      } else {
+        console.log("Install prompt dismissed by user.");
+      }
     } catch (err) {
       console.error("Installation prompt error:", err);
+      startSimulatedDownloader(3000);
     }
-    startDownloader();
   };
 
   const handleTaskCompletion = (tasks) => {
@@ -363,6 +418,14 @@ function App() {
               element={
                 <ProtectedRoute updateAuthState={updateAuthState}>
                   <ExamLegacyRedirect />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/exam/results/:id"
+              element={
+                <ProtectedRoute updateAuthState={updateAuthState}>
+                  <ExamResults onTaskCompletion={handleTaskCompletion} />
                 </ProtectedRoute>
               }
             />
