@@ -106,23 +106,15 @@ function Content({ updateAuthState }) {
   };
 
   useEffect(() => {
-    let isMounted = true; 
+    let isMounted = true;
     const fetchData = async () => {
       try {
         if (!localStorage.getItem('token')) throw new Error('Unauthorized');
 
-        const [userStatsResponse, _, __, unsubmittedResponse, profileResponse] = await Promise.all([
-          api.getOverviewStats(),
-          checkForUpdates(),
-          fetchLeaderboard(),
-          api.getUnsubmittedExams(),
-          api.getMyProfile().catch(() => null)
-        ]);
-
-        if (isMounted) {
-          setUnsubmittedExams(unsubmittedResponse?.unsubmitted_exams || []);
-          if (profileResponse) setUserProfile(profileResponse);
-        }
+        // Critical path only: stats cards. Secondary calls (leaderboard, updates,
+        // unsubmitted, profile) must not block the dashboard from rendering —
+        // on Vercel cold starts one slow endpoint used to hold loading=true for all.
+        const userStatsResponse = await api.getOverviewStats();
 
         if (userStatsResponse && userStatsResponse.version) {
           const clientVersion = localStorage.getItem('version');
@@ -152,14 +144,29 @@ function Content({ updateAuthState }) {
               { title: "Average Percentage", value: "0.00%" }
             ]);
           }
+          setLoading(false);
         }
+
+        // Fire secondary work in parallel without blocking the UI
+        const secondary = Promise.all([
+          checkForUpdates().catch((err) => console.error('Failed to fetch updates:', err)),
+          fetchLeaderboard().catch((err) => console.error('Failed to fetch leaderboard:', err)),
+          api.getUnsubmittedExams().catch(() => ({ unsubmitted_exams: [] })),
+          api.getMyProfile().catch(() => null),
+        ]).then(([,, unsubmittedResponse, profileResponse]) => {
+          if (!isMounted) return;
+          setUnsubmittedExams(unsubmittedResponse?.unsubmitted_exams || []);
+          if (profileResponse) setUserProfile(profileResponse);
+        });
+
+        // Don't await for loading state; swallow secondary errors already handled above
+        secondary.catch(() => {});
       } catch (error) {
         if (isMounted) setError(error.message);
         if (error.message === 'Unauthorized access' || error.message === 'Unauthorized') {
           if (updateAuthState) updateAuthState();
           navigate('/login');
         }
-      } finally {
         if (isMounted) setLoading(false);
       }
     };

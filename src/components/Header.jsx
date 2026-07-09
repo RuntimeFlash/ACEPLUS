@@ -49,10 +49,9 @@ const Header = ({ completedTasks, onToggleSidebar, isMobile, isOpen }) => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const timer = setTimeout(() => {
-        fetchCoinData();
-      }, 2000);
-      return () => clearTimeout(timer);
+      // Fetch coins immediately (lightweight projected query). The old 2s delay
+      // was masking cold starts but made the UI feel slower after login.
+      fetchCoinData();
     }
   }, [isAuthenticated]);
 
