@@ -237,12 +237,9 @@ function MistakeReplay() {
               )}
 
               {nextDueAt ? (
-                <div className="replay-next-due-card">
+                <div className="replay-next-due-row">
                   <RiCalendarScheduleLine />
-                  <div>
-                    <span>Next Review Session Unlocks</span>
-                    <strong>{formatDateTime(nextDueAt) || nextDueAt}</strong>
-                  </div>
+                  <span>Next review session unlocks on <strong className="replay-next-due-time">{formatDateTime(nextDueAt) || nextDueAt}</strong></span>
                 </div>
               ) : (
                 <p className="replay-next-due">No additional reviews scheduled. You are fully caught up!</p>
