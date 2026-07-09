@@ -7,7 +7,7 @@ from gridfs import GridFSBucket
 from pymongo import ASCENDING, DESCENDING
 from pymongo.collection import Collection
 
-from .base import DatabaseClient
+from .base import DatabaseClient, should_ensure_indexes
 from utils.mongo_utils import parse_object_id
 
 class UploadRepository:
@@ -17,8 +17,12 @@ class UploadRepository:
         self.db_client = db_client
         self._bucket9 = GridFSBucket(db_client._db9, bucket_name="uploads")
         self._bucket10 = GridFSBucket(db_client._db10, bucket_name="uploads")
+        if should_ensure_indexes():
+            self.ensure_indexes()
+
+    def ensure_indexes(self) -> None:
         for std in (9, 10):
-            files_col = db_client.get_collection("uploads.files", standard=std)
+            files_col = self.db_client.get_collection("uploads.files", standard=std)
             files_col.create_index([("metadata.user_id", ASCENDING), ("uploadDate", DESCENDING)])
             files_col.create_index([("metadata.parent_file_id", ASCENDING)])
 

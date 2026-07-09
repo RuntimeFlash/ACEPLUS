@@ -5,16 +5,19 @@ from typing import Any, Dict, Optional
 from pymongo import ASCENDING, DESCENDING
 from pymongo.collection import Collection
 
-from .base import DatabaseClient, WriteQueue
+from .base import DatabaseClient, WriteQueue, should_ensure_indexes
 
 class ExamRepository:
     def __init__(self, db_client: DatabaseClient, write_queue: WriteQueue) -> None:
         self.db_client = db_client
         self.write_queue = write_queue
 
-        # Ensure indexes on both DBs
+        if should_ensure_indexes():
+            self.ensure_indexes()
+
+    def ensure_indexes(self) -> None:
         for std in (9, 10):
-            col = db_client.get_collection("Exams", standard=std)
+            col = self.db_client.get_collection("Exams", standard=std)
             col.create_index([("exam-id", ASCENDING)], unique=True)
             col.create_index([("userId", ASCENDING), ("is_submitted", ASCENDING)])
             col.create_index([("submission_timestamp", DESCENDING)])

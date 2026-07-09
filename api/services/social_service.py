@@ -8,6 +8,7 @@ from uuid import uuid4
 from pymongo import ASCENDING, DESCENDING
 
 from db import user_repo
+from db.base import should_ensure_indexes
 from utils.social_utils import (
     compute_level_from_xp,
     merge_profile_with_defaults,
@@ -23,8 +24,16 @@ ALLOWED_STATUS = {"online", "studying", "challenge", "offline"}
 
 class SocialService:
     def __init__(self) -> None:
-        self.db_client = user_repo.db_client
-        self._ensure_indexes()
+        # Lazily resolve db_client so importing routes does not force Mongo + all indexes.
+        self._db_client = None
+        if should_ensure_indexes():
+            self._ensure_indexes()
+
+    @property
+    def db_client(self):
+        if self._db_client is None:
+            self._db_client = user_repo.db_client
+        return self._db_client
 
     def _ensure_indexes(self) -> None:
         for standard in (9, 10):

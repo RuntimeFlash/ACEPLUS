@@ -5,15 +5,19 @@ from typing import Any, Dict
 from pymongo import ASCENDING, DESCENDING
 from pymongo.collection import Collection
 
-from .base import DatabaseClient
+from .base import DatabaseClient, should_ensure_indexes
 
 class QuestionReportRepository:
     """Persists question reports in Mongo instead of local JSON files."""
 
     def __init__(self, db_client: DatabaseClient) -> None:
         self.db_client = db_client
+        if should_ensure_indexes():
+            self.ensure_indexes()
+
+    def ensure_indexes(self) -> None:
         for std in (9, 10):
-            col = db_client.get_collection("QuestionReports", standard=std)
+            col = self.db_client.get_collection("QuestionReports", standard=std)
             col.create_index(
                 [("user_id", ASCENDING), ("exam_id", ASCENDING), ("question_index", ASCENDING)],
                 unique=True,

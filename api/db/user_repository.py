@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from pymongo import ASCENDING
 from pymongo.collection import Collection
 
-from .base import DatabaseClient, WriteQueue
+from .base import DatabaseClient, WriteQueue, should_ensure_indexes
 from utils.user_stats_utils import build_user_doc, to_student_summary
 
 class UserRepository:
@@ -13,9 +13,13 @@ class UserRepository:
         self.db_client = db_client
         self.write_queue = write_queue
 
-        # Ensure indexes exist on both DBs
+        # Indexes are created via migrate/ensure script, not on every serverless cold start.
+        if should_ensure_indexes():
+            self.ensure_indexes()
+
+    def ensure_indexes(self) -> None:
         for std in (9, 10):
-            col = db_client.get_collection("Users", standard=std)
+            col = self.db_client.get_collection("Users", standard=std)
             col.create_index([("id", ASCENDING)], unique=True)
             col.create_index([("standard", ASCENDING), ("division", ASCENDING)])
             col.create_index([("teacher", ASCENDING)])
@@ -49,7 +53,6 @@ class UserRepository:
         doc = col9.find_one({"id": user_id})
         if doc:
             return doc
-
         col10 = self.db_client.get_collection("Users", is_class10=True)
         return col10.find_one({"id": user_id})
 

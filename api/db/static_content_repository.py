@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 
 from pymongo import ASCENDING
 
-from .base import DatabaseClient
+from .base import DatabaseClient, should_ensure_indexes
 from utils.static_content_utils import KNOWN_STATIC_CONTENT_ALIASES, normalize_static_rel_path
 
 class StaticContentRepository:
@@ -17,6 +17,10 @@ class StaticContentRepository:
     def __init__(self, db_client: DatabaseClient) -> None:
         self.db_client = db_client
         self._col = db_client.get_collection("StaticContent", standard=9)
+        if should_ensure_indexes():
+            self.ensure_indexes()
+
+    def ensure_indexes(self) -> None:
         self._col.create_index([("kind", ASCENDING), ("rel_path", ASCENDING)])
         self._col.create_index([("alias", ASCENDING)])
         self._col.create_index([("standard", ASCENDING), ("subject", ASCENDING)])

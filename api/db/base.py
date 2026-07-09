@@ -11,6 +11,26 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 backend_dir = os.path.normpath(os.path.join(current_dir, ".."))
 load_dotenv(dotenv_path=os.path.join(backend_dir, ".env"))
 
+
+def is_serverless() -> bool:
+    """True on Vercel / SERVERLESS=1 — avoid request-path index creation and background threads."""
+    if os.getenv("SERVERLESS", "0") == "1":
+        return True
+    # Vercel sets these automatically
+    return bool(os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
+
+
+def should_ensure_indexes() -> bool:
+    """
+    Index ensure should run in setup/migrate scripts, not on every serverless cold start.
+    Each create_index is a round-trip to Mongo; doing dozens of them on cold start is a major
+    source of multi-second latency on Vercel.
+    """
+    if os.getenv("ENSURE_INDEXES", "").strip() == "1":
+        return True
+    return not is_serverless()
+
+
 # -----------------------------------------------------------------------------
 # Database Client and WriteQueue
 # -----------------------------------------------------------------------------
@@ -32,7 +52,19 @@ class DatabaseClient:
                 "Please define MONGODB_DB_CLASS9 and MONGODB_DB_CLASS10 in your environment."
             )
 
-        self._client = MongoClient(uri)
+        # Serverless-friendly pool: one connection per warm instance, quick timeouts,
+        # recycle idle sockets so Atlas does not hold dead connections.
+        client_kwargs = {
+            "maxPoolSize": int(os.getenv("MONGODB_MAX_POOL_SIZE", "5" if not is_serverless() else "1")),
+            "minPoolSize": 0,
+            "maxIdleTimeMS": int(os.getenv("MONGODB_MAX_IDLE_MS", "10000")),
+            "serverSelectionTimeoutMS": int(os.getenv("MONGODB_SERVER_SELECTION_MS", "5000")),
+            "connectTimeoutMS": int(os.getenv("MONGODB_CONNECT_MS", "5000")),
+            "socketTimeoutMS": int(os.getenv("MONGODB_SOCKET_MS", "20000")),
+            "retryWrites": True,
+            "appname": "aceplus-api",
+        }
+        self._client = MongoClient(uri, **client_kwargs)
         self._db9 = self._client[db9_name]
         self._db10 = self._client[db10_name]
 
@@ -55,7 +87,7 @@ class WriteQueue:
 
     def __init__(self, db_client: DatabaseClient, worker_count: int = 1) -> None:
         self.db_client = db_client
-        self._sync_mode = os.getenv("SERVERLESS", "0") == "1"
+        self._sync_mode = is_serverless() or os.getenv("SERVERLESS", "0") == "1"
         self._q: "queue.Queue[Tuple[str, Tuple, Dict]]" = queue.Queue()
         self._workers: List[threading.Thread] = []
         self._stop_event = threading.Event()
@@ -100,4 +132,3 @@ class WriteQueue:
         self._stop_event.set()
         for t in self._workers:
             t.join(timeout=1.0)
-

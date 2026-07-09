@@ -5,22 +5,26 @@ from typing import Any, Dict, List, Optional
 from pymongo import ASCENDING
 from pymongo.collection import Collection
 
-from .base import DatabaseClient, WriteQueue
+from .base import DatabaseClient, WriteQueue, should_ensure_indexes
 
 class TestRepository:
     def __init__(self, db_client: DatabaseClient, write_queue: WriteQueue) -> None:
         self.db_client = db_client
         self.write_queue = write_queue
 
+        if should_ensure_indexes():
+            self.ensure_indexes()
+
+    def ensure_indexes(self) -> None:
         for std in (9, 10):
-            col = db_client.get_collection("Tests", standard=std)
+            col = self.db_client.get_collection("Tests", standard=std)
             col.create_index([("test-id", ASCENDING)], unique=True)
             col.create_index([("standard", ASCENDING)])
             col.create_index([("expiration_date", ASCENDING)])
             col.create_index([("standard", ASCENDING), ("created_by", ASCENDING)])
             col.create_index([("standard", ASCENDING), ("division", ASCENDING)])
             col.create_index([("standard", ASCENDING), ("students", ASCENDING)])
-            inactive = db_client.get_collection("InactiveTests", standard=std)
+            inactive = self.db_client.get_collection("InactiveTests", standard=std)
             inactive.create_index([("test-id", ASCENDING)], unique=True)
 
     def _tests_col(self, is_class10: Optional[bool] = None, standard: Optional[int] = None) -> Collection:

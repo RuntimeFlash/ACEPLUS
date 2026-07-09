@@ -22,6 +22,8 @@ logging.basicConfig(
 )
 
 # Force serverless-safe behavior in backend runtime.
+# SERVERLESS=1: sync WriteQueue (no background threads that die mid-request on Vercel)
+# and skip create_index on every cold start (indexes via scripts/ensure_indexes.py).
 repo_dir = api_dir.parent
 os.environ.setdefault("SERVERLESS", "1")
 os.environ.setdefault("BACKEND_DATA_DIR", str(repo_dir / "Legacy Json Qs"))

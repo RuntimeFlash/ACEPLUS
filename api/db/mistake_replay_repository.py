@@ -6,15 +6,19 @@ from typing import Any, Dict, List, Optional
 from pymongo import ASCENDING
 from pymongo.collection import Collection
 
-from .base import DatabaseClient, WriteQueue
+from .base import DatabaseClient, WriteQueue, should_ensure_indexes
 
 class MistakeReplayRepository:
     def __init__(self, db_client: DatabaseClient, write_queue: WriteQueue) -> None:
         self.db_client = db_client
         self.write_queue = write_queue
 
+        if should_ensure_indexes():
+            self.ensure_indexes()
+
+    def ensure_indexes(self) -> None:
         for std in (9, 10):
-            col = db_client.get_collection("MistakeReplay", standard=std)
+            col = self.db_client.get_collection("MistakeReplay", standard=std)
             col.create_index([("replay_id", ASCENDING)], unique=True)
             col.create_index([("userId", ASCENDING), ("mistake_key", ASCENDING)], unique=True)
             col.create_index([("userId", ASCENDING), ("is_active", ASCENDING), ("due_at_dt", ASCENDING)])
