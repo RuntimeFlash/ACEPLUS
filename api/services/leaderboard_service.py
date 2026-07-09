@@ -34,13 +34,21 @@ class LeaderboardService:
         month_key: Optional[str] = None,
         page: int = 1,
         page_size: int = 20,
+        division: Optional[str] = None,
     ) -> Dict[str, Any]:
         mk = month_key or current_month_key()
         doc = self.leaderboard_repo.get_monthly_snapshot(standard, mk)
         if not doc:
             doc = self._build_snapshot_for_month(standard, mk)
 
-        entries = list(doc.get("entries", []))
+        entries = list(doc.get("entries", []) or [])
+        if division:
+            div = str(division).strip()
+            entries = [
+                entry for entry in entries
+                if str(entry.get("division", "")).strip() == div
+            ]
+
         total_count = len(entries)
         start_idx = max(0, (page - 1) * page_size)
         end_idx = min(total_count, start_idx + page_size)

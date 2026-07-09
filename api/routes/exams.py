@@ -164,31 +164,19 @@ def get_leaderboard(
 
     monthly = leaderboard_service.get_or_build_monthly(
         standard=standard,
-        page=1,
-        page_size=10000,
+        page=page,
+        page_size=page_size,
+        division=division or None,
     )
-    entries = monthly.get("entries", []) or []
-    if division:
-        entries = [entry for entry in entries if str(entry.get("division", "")).strip() == division]
-
-    ranked = []
-    for idx, entry in enumerate(entries, 1):
-        item = dict(entry)
-        item["rank"] = idx
-        ranked.append(item)
-
-    total_count = len(ranked)
-    start = max(0, (page - 1) * page_size)
-    end = min(total_count, start + page_size)
-    paged_entries = ranked[start:end]
-    total_pages = max(1, (total_count + page_size - 1) // page_size)
+    total_count = int(monthly.get("total_count", 0) or 0)
+    total_pages = max(1, (total_count + page_size - 1) // page_size) if total_count else 1
 
     payload = {
         "leaderboard_id": f"{monthly.get('month')}-{standard}-{monthly.get('version')}",
         "month": monthly.get("month"),
         "class": str(standard),
         "division": division,
-        "leaderboard": paged_entries,
+        "leaderboard": monthly.get("entries", []) or [],
         "pagination": {
             "page": page,
             "page_size": page_size,

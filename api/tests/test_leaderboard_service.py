@@ -43,6 +43,54 @@ class _FakeLeaderboardRepo:
         return None
 
 
+def test_get_or_build_monthly_filters_by_division() -> None:
+    users = {
+        9: [
+            {
+                "id": "s1",
+                "name": "John Doe",
+                "division": "A",
+                "coins": 5,
+                "examHistory": [
+                    {
+                        "date": "10-02-2026",
+                        "score": 8,
+                        "totalQuestions": 10,
+                        "percentage": 80.0,
+                        "subject": "Math",
+                        "lessons": ["L1"],
+                    }
+                ],
+            },
+            {
+                "id": "s2",
+                "name": "Jane Roe",
+                "division": "B",
+                "coins": 50,
+                "examHistory": [
+                    {
+                        "date": "10-02-2026",
+                        "score": 9,
+                        "totalQuestions": 10,
+                        "percentage": 90.0,
+                        "subject": "Math",
+                        "lessons": ["L1"],
+                    }
+                ],
+            },
+        ]
+    }
+    repo = _FakeLeaderboardRepo(users_by_standard=users)
+    service = LeaderboardService(repo)
+
+    payload = service.get_or_build_monthly(
+        standard=9, month_key="2026-02", page=1, page_size=20, division="A"
+    )
+    assert payload["total_count"] == 1
+    assert payload["entries"][0]["userId"] == "s1"
+    assert payload["entries"][0]["rank"] == 1
+
+
 def test_get_or_build_monthly_builds_ranks_and_paginates() -> None:
     users = {
         9: [
