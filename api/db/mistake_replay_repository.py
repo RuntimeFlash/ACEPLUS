@@ -30,14 +30,16 @@ class MistakeReplayRepository:
     ) -> bool:
         standard = int(card_data.get("standard", 10 if is_class10 else 9))
         col = self._col_by_params(is_class10=is_class10, standard=standard)
+        set_data = dict(card_data)
+        created_at_dt = set_data.pop("created_at_dt", None)
         result = col.update_one(
             {
                 "userId": card_data["userId"],
                 "mistake_key": card_data["mistake_key"],
             },
             {
-                "$set": card_data,
-                "$setOnInsert": {"created_at_dt": card_data.get("created_at_dt")},
+                "$set": set_data,
+                "$setOnInsert": {"created_at_dt": created_at_dt},
             },
             upsert=True,
         )
