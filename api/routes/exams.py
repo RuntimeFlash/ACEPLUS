@@ -96,7 +96,12 @@ def get_user_exams(
 def get_user_stats(
     current_user: CurrentUser = Depends(get_current_user),
 ):
-    user = user_repo.get_user(current_user.user_id, current_user.is_class10)
+    # Projection: avoid shipping examHistory / questionHistory / full subjects on every home load.
+    user = user_repo.get_user(
+        current_user.user_id,
+        current_user.is_class10,
+        projection={"stats": 1, "id": 1},
+    )
     if not user:
         return JSONResponse(content={"message": "User not found"}, status_code=404)
 
@@ -122,7 +127,11 @@ def get_user_stats(
 def fetch_coins(
     current_user: CurrentUser = Depends(get_current_user),
 ):
-    user = user_repo.get_user(current_user.user_id, current_user.is_class10)
+    user = user_repo.get_user(
+        current_user.user_id,
+        current_user.is_class10,
+        projection={"coins": 1, "tasks": 1, "id": 1},
+    )
     if not user:
         return JSONResponse(content={"message": "User not found"}, status_code=404)
 
@@ -142,7 +151,11 @@ def get_leaderboard(
     page_size: int = Query(default=20, ge=1, le=100),
     current_user: CurrentUser = Depends(get_current_user),
 ):
-    user = user_repo.get_user(current_user.user_id, current_user.is_class10)
+    user = user_repo.get_user(
+        current_user.user_id,
+        current_user.is_class10,
+        projection={"division": 1, "id": 1},
+    )
     if not user:
         return JSONResponse(content={"message": "User not found"}, status_code=404)
 

@@ -295,21 +295,27 @@ class ExamService:
     def get_recent_unsubmitted_exams(self, user_id: str, is_class10: bool) -> Dict[str, Any]:
         col = exam_repo._col_by_params(is_class10=is_class10)
         cutoff_date = datetime.now(timezone.utc) - timedelta(days=7)
-        unsubmitted_exams = col.find(
-            {
-                "userId": user_id,
-                "is_submitted": False,
-                "timestamp_dt": {"$gte": cutoff_date},
-            },
-            {
-                "exam-id": 1,
-                "subject": 1,
-                "lessons": 1,
-                "timestamp": 1,
-                "test": 1,
-                "test_name": 1,
-                "questions": 1,
-            }
+        # Compute question_count in Mongo — never pull full question arrays on the home path.
+        project_fields = {
+            "exam-id": 1,
+            "subject": 1,
+            "lessons": 1,
+            "timestamp": 1,
+            "test": 1,
+            "test_name": 1,
+            "question_count": {"$size": {"$ifNull": ["$questions", []]}},
+        }
+        unsubmitted_exams = col.aggregate(
+            [
+                {
+                    "$match": {
+                        "userId": user_id,
+                        "is_submitted": False,
+                        "timestamp_dt": {"$gte": cutoff_date},
+                    }
+                },
+                {"$project": project_fields},
+            ]
         )
         recent_unsubmitted: List[Dict[str, Any]] = []
 
@@ -322,26 +328,22 @@ class ExamService:
                     "timestamp": exam.get("timestamp"),
                     "test": exam.get("test", False),
                     "test_name": exam.get("test_name"),
-                    "question_count": len(exam.get("questions", [])),
+                    "question_count": int(exam.get("question_count", 0) or 0),
                 }
             )
 
         # Legacy fallback for exams created before timestamp_dt existed.
-        legacy_unsubmitted = col.find(
-            {
-                "userId": user_id,
-                "is_submitted": False,
-                "timestamp_dt": {"$exists": False},
-            },
-            {
-                "exam-id": 1,
-                "subject": 1,
-                "lessons": 1,
-                "timestamp": 1,
-                "test": 1,
-                "test_name": 1,
-                "questions": 1,
-            },
+        legacy_unsubmitted = col.aggregate(
+            [
+                {
+                    "$match": {
+                        "userId": user_id,
+                        "is_submitted": False,
+                        "timestamp_dt": {"$exists": False},
+                    }
+                },
+                {"$project": project_fields},
+            ]
         )
         for exam in legacy_unsubmitted:
             timestamp_str = exam.get("timestamp")
@@ -363,7 +365,7 @@ class ExamService:
                     "timestamp": timestamp_str,
                     "test": exam.get("test", False),
                     "test_name": exam.get("test_name"),
-                    "question_count": len(exam.get("questions", [])),
+                    "question_count": int(exam.get("question_count", 0) or 0),
                 }
             )
 

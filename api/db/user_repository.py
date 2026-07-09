@@ -40,21 +40,31 @@ class UserRepository:
         # Default to class 9 if unknown (caller may insert).
         return col9, False
 
-    def get_user(self, user_id: str, is_class10: Optional[bool] = None) -> Optional[Dict[str, Any]]:
+    def get_user(
+        self,
+        user_id: str,
+        is_class10: Optional[bool] = None,
+        projection: Optional[Dict[str, int]] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Fetch a user document. Pass projection to avoid loading large fields
+        (examHistory, questionHistory, subjects) on hot dashboard paths.
+        """
         if is_class10 is not None:
             col = self.db_client.get_collection("Users", is_class10=is_class10)
-            doc = col.find_one({"id": user_id})
+            doc = col.find_one({"id": user_id}, projection)
             if doc:
                 return doc
             other_col = self.db_client.get_collection("Users", is_class10=not is_class10)
-            return other_col.find_one({"id": user_id})
+            return other_col.find_one({"id": user_id}, projection)
 
         col9 = self.db_client.get_collection("Users", is_class10=False)
-        doc = col9.find_one({"id": user_id})
+        doc = col9.find_one({"id": user_id}, projection)
         if doc:
             return doc
+
         col10 = self.db_client.get_collection("Users", is_class10=True)
-        return col10.find_one({"id": user_id})
+        return col10.find_one({"id": user_id}, projection)
 
     def create_user(
         self,
